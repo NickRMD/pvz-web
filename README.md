@@ -35,3 +35,7 @@ Este projeto é exclusivamente para fins educacionais e de entretenimento. Todos
 ## ⚠️ Disclaimer
 
 This is a fan project and is not affiliated with or endorsed by **PopCap Games** or **Electronic Arts**. All assets, characters, and concepts from the original *Plants vs Zombies* are the property of their respective owners.
+
+## 📝 License
+
+This project is not licensed for commercial use. It is a fan-made project created for educational and entertainment purposes only. All rights to the original *Plants vs Zombies* game, characters, and assets belong to **PopCap Games** and **Electronic Arts**. No copyright infringement is intended.
