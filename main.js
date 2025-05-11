@@ -398,8 +398,8 @@ sprites.peashooter2.src = '/assets/pea.webp';
 sprites.peashooter3.src = '/assets/pea.webp';
 sprites.walnut.src = '/assets/wallnut.webp';
 sprites.zombie.src = '/assets/zombie_basic.webp';
-sprites.zombieCone.src = '/assets/zombie_basic.webp';
-sprites.zombieBucket.src = '/assets/zombie_basic.webp';
+sprites.zombieCone.src = '/assets/zombie_cone.webp';
+sprites.zombieBucket.src = '/assets/zombie_bucket.webp';
 
 const plantTypes = {
     sunflower: {
