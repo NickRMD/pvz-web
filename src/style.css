@@ -1,0 +1,140 @@
+body {
+	margin: 0;
+	overflow: hidden;
+	background-color: #f0f0f0;
+	font-family: Arial, sans-serif;
+}
+canvas {
+	display: block;
+}
+#ui {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	background-color: rgba(255, 255, 255, 0.7);
+	padding: 10px;
+	border-radius: 5px;
+}
+#plantSelection {
+	position: absolute;
+	bottom: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 10px;
+	background-color: rgba(255, 255, 255, 0.7);
+	padding: 10px;
+	border-radius: 5px;
+}
+.plant-icon {
+	width: 50px;
+	height: 50px;
+	background-color: #4caf50;
+	border-radius: 5px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+	overflow: hidden;
+}
+.plant-icon img {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
+}
+.plant-icon:hover {
+	background-color: #45a049;
+}
+#mergeArea {
+	position: absolute;
+	bottom: 18vh;
+	left: 47%;
+	transform: translateX(-50%);
+	width: 73vw;
+	height: 68vh;
+	background-color: rgba(255, 255, 0, 0.3);
+	border: 2px dashed yellow;
+	border-radius: 5px;
+	display: none;
+	justify-content: center;
+	align-items: center;
+	font-weight: bold;
+}
+#loading {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: white;
+	font-size: 24px;
+	z-index: 100;
+}
+
+#plantPreview {
+	position: absolute;
+	width: 50px;
+	height: 50px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	pointer-events: none;
+	display: none;
+	z-index: 100;
+}
+
+.sun-effect {
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	background-image: url("/assets/sun.webp");
+	background-size: contain;
+	animation: sunCollect 1s forwards;
+	z-index: 99;
+}
+
+@keyframes sunCollect {
+	0% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(0) translateY(-50px);
+		opacity: 0;
+	}
+}
+
+#pauseMenu {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+	z-index: 200;
+	color: white;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+#pauseMenu h2 {
+	font-size: 48px;
+	margin-bottom: 20px;
+}
+
+#pauseMenu button {
+	background: #4caf50;
+	color: white;
+	border: none;
+	padding: 15px 30px;
+	font-size: 18px;
+	margin: 10px;
+	cursor: pointer;
+	border-radius: 5px;
+}
