@@ -18,7 +18,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@types/assert": "^1.5.11",
+    "@types/node": "^22.15.17",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "assert": "^2.1.0",
+    "ts-pattern": "^5.7.0"
   }
 }
