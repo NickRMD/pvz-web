@@ -13,6 +13,8 @@ class CanvasHandler {
 	private _canvas_resize() {
 		this._canvas.width = window.innerWidth;
 		this._canvas.height = window.innerHeight;
+    this._grass_width = this._canvas.width * 0.8;
+    this._zombie_area_width = this._canvas.width * 0.2;
 		this.draw_background();
 	}
 
@@ -31,6 +33,14 @@ class CanvasHandler {
 	public mut_canvas() {
 		return this._canvas;
 	}
+
+  public grass_width(): Readonly<number> {
+    return this._grass_width;
+  }
+
+  public zombie_area_width(): Readonly<number> {
+    return this._zombie_area_width;
+  }
 
 	public draw_background() {
 		this._ctx.fillStyle = "#7CFC0000";
