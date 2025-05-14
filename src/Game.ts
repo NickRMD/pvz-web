@@ -14,7 +14,7 @@ class Game {
 
 	constructor() {
 		this._collision_system = new CollisionSystem();
-		this._wave_system = new WaveSystem(this.rows, this._game_state.add_zombie);
+		this._wave_system = new WaveSystem(this._game_state.rows, this._game_state.add_zombie);
 	}
 
 	public async start() {
@@ -32,7 +32,7 @@ class Game {
 		}
 	}
 
-	private game_loop(timestamp) {
+	private game_loop(timestamp: number) {
 		if (this._game_state.gameOver) return;
 		if (this._game_state.paused) {
 			requestAnimationFrame(this.game_loop);
@@ -325,14 +325,14 @@ class Game {
 		}
 	}
 
-	generateRandomSun() {
+	private _generate_random_sun():Sun {
 		const sun = new Sun(
 			Math.random() * (this._canvas_handler.canvas().width - 100) + 50,
 			0,
 		);
 		sun.targetY =
 			Math.random() * (this._canvas_handler.canvas().height - 200) + 100;
-		this._game_state.suns.push(sun);
+		this._game_state.push_sun(sun);
 		return sun;
 	}
 
