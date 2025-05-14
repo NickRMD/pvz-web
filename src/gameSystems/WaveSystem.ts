@@ -11,10 +11,10 @@ class WaveSystem {
 	private _wave_cooldown = 30000;
 	private _last_wave_time = 0;
 	private _wave_active = false;
-	private _rows: number;
+	private _rows: () => number;
 
 	constructor(
-		rows: number,
+		rows: () => number,
 		add_zombie: (row: number, zombie_type: ZombieType) => void,
 	) {
 		this._rows = rows;
@@ -113,7 +113,7 @@ class WaveSystem {
 		const wave = this._waves[this._current_wave % this._waves.length];
 		const zombieType =
 			wave.types[Math.floor(Math.random() * wave.types.length)];
-		const row = Math.floor(Math.random() * this._rows);
+		const row = Math.floor(Math.random() * this._rows());
 		this._add_zombie(row, zombieType);
 	}
 
