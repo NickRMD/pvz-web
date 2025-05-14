@@ -1,7 +1,10 @@
-class Sun {
+import Entity from "./Entity";
+
+class Sun extends Entity {
 	constructor(x, y, collected = false) {
-		this.x = x;
-		this.y = y;
+    super();
+		this._x = x;
+		this._y = y;
 		this.targetY = y;
 		this.width = 40;
 		this.height = 40;
