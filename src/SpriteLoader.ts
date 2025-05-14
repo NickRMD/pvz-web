@@ -1,40 +1,37 @@
-const spriteKeys = [
-	"sunflower",
-	"peashooter",
-	"peashooter2",
-	"peashooter3",
-	"walnut",
-	"zombie",
-	"projectile",
-	"sun",
-	"zombieCone",
-	"zombieBucket",
-] as const;
-type SpriteKey = (typeof spriteKeys)[number];
-interface Sprites extends Record<SpriteKey, HTMLImageElement> {}
+export enum SpriteKeyEnum {
+  Sunflower = "sunflower",
+  Peashooter = "peashooter",
+  Pea = "pea",
+  Walnut = "walnut",
+  Zombie = "zombie_basic",
+  Sun = "sun",
+  ZombieCone = "zombie_cone",
+  ZombieBucket = "zombie_bucket",
+};
 
-class SpriteLoader {
+type SpriteKey = `${SpriteKeyEnum}`;
+export interface Sprites extends Record<SpriteKey, HTMLImageElement> {}
+
+export default class SpriteLoader {
 	private _sprites?: Sprites;
 	private _loaded = false;
 
 	constructor() {}
 
 	public async load() {
-		const sprites: Sprites = {} as Sprites;
-		for (const key of spriteKeys) {
-			sprites[key] = new Image();
-		}
+    const spriteKeys = Object.values(SpriteKeyEnum);	
+    const spritesArray = await Promise.all(spriteKeys.map(async key => {
+      const img = new Image();
+      const { default: url } = await import(`#/sprites/${key}.webp`);
+      img.src = url;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error(`Failed to load sprite ${key} at ${url}`));
+      })
+      return [key, img] as const; 
+    }));
 
-		sprites.sunflower.src = "assets/sunflower.webp";
-		sprites.peashooter.src = "assets/peashooter.webp";
-		sprites.sun.src = "/assets/sun.webp";
-		sprites.projectile.src = "/assets/pea.webp";
-		sprites.peashooter2.src = "/assets/pea.webp";
-		sprites.peashooter3.src = "/assets/pea.webp";
-		sprites.walnut.src = "/assets/wallnut.webp";
-		sprites.zombie.src = "/assets/zombie_basic.webp";
-		sprites.zombieCone.src = "/assets/zombie_cone.webp";
-		sprites.zombieBucket.src = "/assets/zombie_buckethead.webp";
+    const sprites: Sprites = Object.fromEntries(spritesArray) as Sprites;
 
 		this._loaded = true;
 		this._sprites = sprites;
@@ -45,9 +42,7 @@ class SpriteLoader {
 	}
 
 	public sprites(): Readonly<Sprites> {
-		if (!this._sprites) throw Error("Sprites aren't initialized yet!");
-		return this._sprites;
+		if (!this._sprites) throw Error("Sprites aren't initialized yet!")
+      else return this._sprites;
 	}
 }
-
-export default SpriteLoader;
