@@ -1,38 +1,49 @@
-class CollisionSystem {
-	constructor() {
-		this.grid = {};
-	}
+import type Entity from "../entities/Entity";
 
-	update(entities) {
-		this.grid = {};
-		entities.forEach((entity) => {
-			const gridX = Math.floor(entity.x / 50);
-			const gridY = Math.floor(entity.y / 50);
+class CollisionSystem {
+
+  private _grid: Record<string, Entity[]> = {};
+
+	constructor() {}
+
+	public async update(entities: Entity[]) {
+		this._grid = {};
+    const entityMapArray = await Promise.all(entities.map(async entity => {
+      const gridX = Math.floor(entity.x() / 50);
+			const gridY = Math.floor(entity.y() / 50);
 			const key = `${gridX},${gridY}`;
 
-			if (!this.grid[key]) this.grid[key] = [];
-			this.grid[key].push(entity);
-		});
+      return [key, entity] as const;
+    }))
+
+    this._grid = entityMapArray.reduce((acc: Record<string, Entity[]>, [key, entity]) => {
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(entity);
+      return acc;
+    }, {});
 	}
 
-	getNearby(x, y, radius) {
-		const results = [];
+	public get_nearby(x: number, y: number, radius: number, gridRadius = 1) {
 		const gridX = Math.floor(x / 50);
 		const gridY = Math.floor(y / 50);
 
-		for (let i = gridX - 1; i <= gridX + 1; i++) {
-			for (let j = gridY - 1; j <= gridY + 1; j++) {
-				const key = `${i},${j}`;
-				if (this.grid[key]) {
-					results.push(...this.grid[key]);
-				}
-			}
-		}
+    const range = (n: number) => Array.from({ length: n * 2 + 1 }, (_, i) => i - n);
+
+    const range_of_grid_radius = range(gridRadius);
+
+    const results = range_of_grid_radius.flatMap(
+      dx => range_of_grid_radius.flatMap(
+        dy => {
+          const cell = this._grid[`${gridX + dx},${gridY + dy}`];
+          return cell ?? [];
+        }))
 
 		return results.filter((entity) => {
-			const dx = entity.x - x;
-			const dy = entity.y - y;
-			return Math.sqrt(dx * dx + dy * dy) <= radius;
+			const dx = entity.x() - x;
+			const dy = entity.y() - y;
+			return Math.hypot(dx, dy) <= radius;
 		});
 	}
 }
