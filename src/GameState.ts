@@ -25,15 +25,30 @@ class GameState {
 	};
 	private _game_over = false;
 	private _paused = true;
+  private readonly _wave_count: () => number;
+  private readonly _current_level: () => number;
 	public selected_plant = null;
 	public dragging_plant = null;
 
-	constructor() {
+	constructor(
+    wave_count: () => number,
+    current_level: () => number
+  ) {
+    this._wave_count = wave_count;
+    this._current_level = current_level;
 		// this.mergePlants = [];
 		document.getElementById("pauseMenu")!.style.display = this._paused
 			? "flex"
 			: "none";
 	}
+
+  public rows():number {
+    return this._grid.rows;
+  }
+
+  public push_sun(sun: Sun) {
+    this._suns.push(sun);
+  }
 
 	reset() {
 		this._sun = 50;
@@ -130,10 +145,10 @@ class GameState {
 	}
 
 	public update_ui() {
-		document.getElementById("sunCount")!.textContent = this.sun.toString();
-		document.getElementById("zombieCount")!.textContent = this.zombies.length;
-		document.getElementById("waveCount")!.textContent = this.waveCount;
-		document.getElementById("levelCount")!.textContent = this.level;
+		document.getElementById("sunCount")!.textContent = this._sun.toString();
+		document.getElementById("zombieCount")!.textContent = this._zombies.length.toString();
+		document.getElementById("waveCount")!.textContent = this._wave_count().toString();
+		document.getElementById("levelCount")!.textContent = this._current_level().toString();
 	}
 }
 
