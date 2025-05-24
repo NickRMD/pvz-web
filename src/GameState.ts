@@ -211,7 +211,7 @@ class GameState {
     plant: Plant,
     zombie: Zombie,
     kind: ProjectileKind,
-    direction: ProjectileDirection,
+    _direction: ProjectileDirection,
   ) {
     // TODO: Implement direction
 

@@ -20,7 +20,7 @@ export default class Peashooter extends Plant {
   protected _sprite = SpriteKeyEnum.Peashooter;
   protected _hex_color = "#4CAF50";
 
-  private _range = 300;
+  // private _range = 300;
   private _attack_speed = 2000;
 
   update(timestamp: number) {

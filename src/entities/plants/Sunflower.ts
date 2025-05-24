@@ -17,7 +17,7 @@ export default class Sunflower extends Plant {
   protected _sprite = SpriteKeyEnum.Sunflower;
   protected _hex_color = "#FFD700";
 
-  private _sun_production = 45;
+  // private _sun_production = 45;
   private _sun_production_speed = 15000;
 
   update(timestamp: number) {
