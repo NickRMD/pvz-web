@@ -1,5 +1,3 @@
-import deep_freeze from "./deep_freeze";
-
 type AsyncSubscriber<T> = (value: T) => Promise<void> | void;
 
 export default class AsyncSignal<T> {
@@ -11,7 +9,7 @@ export default class AsyncSignal<T> {
   }
 
   get value(): Readonly<T> {
-    return deep_freeze(this._value);
+    return this._value;
   }
 
   set value(new_value: T) {
@@ -39,8 +37,7 @@ export default class AsyncSignal<T> {
 
   private async _notify() {
     await Promise.all(
-      Array.from(this._subscribers).map(sub => sub(this._value))
+      Array.from(this._subscribers).map((sub) => sub(this._value)),
     );
   }
 }
-

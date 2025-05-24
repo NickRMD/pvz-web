@@ -1,5 +1,3 @@
-import deep_freeze from "./deep_freeze";
-
 type Subscriber<T> = (value: T) => void;
 
 export default class Signal<T> {
@@ -11,7 +9,7 @@ export default class Signal<T> {
   }
 
   get value(): Readonly<T> {
-    return deep_freeze(this._value);
+    return this._value;
   }
 
   set value(new_value: T) {
@@ -38,7 +36,7 @@ export default class Signal<T> {
   }
 
   private _notify() {
-    for(const callback of this._subscribers) {
+    for (const callback of this._subscribers) {
       callback(this._value);
     }
   }
