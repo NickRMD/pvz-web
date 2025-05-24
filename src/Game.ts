@@ -1,4 +1,5 @@
 import CanvasHandler from "./CanvasHandler";
+import { SpriteToPlantKind } from "./entities/entityKinds/PlantKind.ts";
 import Sun from "./entities/Sun";
 import GameState from "./GameState.ts";
 import CollisionSystem from "./gameSystems/CollisionSystem";
@@ -6,417 +7,423 @@ import WaveSystem from "./gameSystems/WaveSystem";
 import SpriteLoader from "./SpriteLoader";
 
 class Game {
-	private _sprite_loader = new SpriteLoader();
-	private _canvas_handler = new CanvasHandler();
-	private _game_state = new GameState();
-	private _collision_system: CollisionSystem;
-	private _wave_system: WaveSystem;
+  private _sprite_loader = new SpriteLoader();
+  private _canvas_handler = new CanvasHandler();
+  private _game_state: GameState;
+  private _collision_system: CollisionSystem;
+  private _wave_system: WaveSystem;
 
-	constructor() {
-		this._collision_system = new CollisionSystem();
-		this._wave_system = new WaveSystem(this._game_state.rows, this._game_state.add_zombie);
-	}
+  constructor() {
+    this._collision_system = new CollisionSystem();
+    this._game_state = new GameState(this._sprite_loader, this._canvas_handler);
+    this._wave_system = new WaveSystem(
+      this._game_state.rows.bind(this._game_state),
+      this._game_state.add_zombie.bind(this._game_state),
+    );
+    this._game_state.initialize(
+      this._wave_system.current_wave.bind(this._wave_system),
+      this._wave_system.level.bind(this._wave_system),
+    );
+  }
 
-	public async start() {
-		const loading_sprites = this._sprite_loader.load();
-		this._game_state.update_ui();
-		this._draw_grid();
-		await loading_sprites;
-		if (this._sprite_loader.is_loaded()) {
-			document.getElementById("loading")!.style.display = "none";
-			this._game_state.update_ui();
-			// playStartSound();
-			requestAnimationFrame(this.game_loop);
-		} else {
-			throw new Error("There was an error loading sprites!");
-		}
-	}
+  public async start() {
+    const loading_sprites = this._sprite_loader.load();
+    this._game_state.update_ui();
+    this._draw_grid();
+    this._setup_listeners();
+    await loading_sprites;
+    if (this._sprite_loader.is_loaded()) {
+      document.getElementById("loading")!.style.display = "none";
+      this._game_state.update_ui();
+      // playStartSound();
+      requestAnimationFrame(this.game_loop.bind(this));
+    } else {
+      throw new Error("There was an error loading sprites!");
+    }
+  }
 
-	private game_loop(timestamp: number) {
-		if (this._game_state.gameOver) return;
-		if (this._game_state.paused) {
-			requestAnimationFrame(this.game_loop);
-			return;
-		}
+  private game_loop(timestamp: number) {
+    if (this._game_state.is_game_over()) return;
+    if (this._game_state.is_paused()) {
+      requestAnimationFrame(this.game_loop.bind(this));
+      return;
+    }
 
-		// Limpar o canvas
-		this._canvas_handler
-			.ctx()
-			.clearRect(
-				0,
-				0,
-				this._canvas_handler.canvas().width,
-				this._canvas_handler.canvas().height,
-			);
+    // Limpar o canvas
+    this._canvas_handler
+      .ctx()
+      .clearRect(
+        0,
+        0,
+        this._canvas_handler.canvas().width,
+        this._canvas_handler.canvas().height,
+      );
 
-		this._canvas_handler.draw_background();
+    this._canvas_handler.draw_background();
 
-		this._collision_system.update([
-			...this._game_state.zombies,
-			...this._game_state.plants,
-		]);
-		this._wave_system.update(timestamp);
+    this._collision_system.update([
+      ...this._game_state.zombies(),
+      ...this._game_state.plants(),
+    ]);
+    this._wave_system.update(
+      timestamp,
+      this._game_state.is_game_over(),
+      this._game_state.is_paused(),
+    );
 
-		this._draw_grid();
+    this._draw_grid();
 
-		this._game_state.plants.forEach((plant) => plant.update(timestamp));
-		this._game_state.plants.forEach((plant) =>
-			plant.draw(this._canvas_handler.ctx()),
-		);
+    for (const plant of this._game_state.plants()) {
+      plant.update(timestamp);
+      plant.draw(this._canvas_handler.ctx());
+    }
 
-		this._game_state.projectiles = this._game_state.projectiles.filter(
-			(proj) => {
-				proj.update();
-				proj.draw(this._canvas_handler.ctx());
-				return !proj.reached;
-			},
-		);
+    this._game_state.projectiles().value = this._game_state
+      .projectiles()
+      .value.filter((proj) => {
+        proj.update();
+        proj.draw(this._canvas_handler.ctx());
+        return !proj.reached();
+      });
 
-		this._game_state.zombies.forEach((zombie) => {
-			zombie.x -= zombie.speed;
+    for (const zombie of this._game_state.mut_zombies()) {
+      zombie.x().value -= zombie.speed;
 
-			const gridPos = this._game_state.getGridPosition(
-				zombie.x,
-				this._game_state.grid.offsetY +
-					zombie.row * this._game_state.grid.cellHeight,
-			);
-			if (gridPos) {
-				const plant = this._game_state.plants.find(
-					(p) => p.row === gridPos.row && p.col === gridPos.col,
-				);
-				if (!plant) {
-					zombie.speed = 0.5;
-				}
-				if (plant) {
-					zombie.speed = 0;
-					plant.health -= zombie.damage;
-					if (plant.health <= 0) {
-						this._game_state.plants.splice(
-							this._game_state.plants.indexOf(plant),
-							1,
-						);
-						zombie.speed = 0.5;
-					}
-				}
-			}
+      const gridPos = this._game_state.get_grid_position(
+        zombie.x().value,
+        this._game_state.grid().offsetY +
+          zombie.row() * this._game_state.grid().cellHeight,
+      );
+      if (gridPos) {
+        const plant = this._game_state
+          .plants()
+          .find((p) => p.row() === gridPos.row && p.col() === gridPos.col);
+        if (!plant) {
+          zombie.speed = 0.5;
+        }
+        if (plant) {
+          zombie.speed = 0;
+          plant.health().value -= zombie.damage().value;
+          if (plant.health().value <= 0) {
+            this._game_state
+              .mut_plants()
+              .splice(this._game_state.plants().indexOf(plant), 1);
+            zombie.speed = 0.5;
+          }
+        }
+      }
 
-			if (zombie.x < this._game_state.grid.offsetX) {
-				this.game_over();
-				return;
-			}
-		});
+      if (zombie.x().value < this._game_state.grid().offsetX) {
+        this.game_over();
+        return;
+      }
+    }
 
-		this._game_state.zombies.forEach((zombie) => drawZombie(zombie));
+    for (const zombie of this._game_state.zombies()) {
+      zombie.draw(this._canvas_handler.ctx());
+    }
 
-		if (this._game_state.suns) {
-			this._game_state.suns = this._game_state.suns.filter((sun) =>
-				sun.update(),
-			);
-			this._game_state.suns.forEach((sun) =>
-				sun.draw(this._canvas_handler.ctx()),
-			);
-		}
+    if (this._game_state.suns().value) {
+      this._game_state.suns().value = this._game_state
+        .suns()
+        .value.filter((sun) => {
+          sun.update();
+          sun.draw(this._canvas_handler.ctx());
+          return !sun.collected();
+        });
+    }
 
-		if (
-			timestamp - this._game_state.lastSunTime >
-			this._game_state.sunInterval
-		) {
-			generateRandomSun();
-			this._game_state.lastSunTime = timestamp;
-		}
+    if (
+      timestamp - this._game_state.last_sun_time >
+      this._game_state.sun_interval
+    ) {
+      // generateRandomSun();
+      this._generate_random_sun();
+      this._game_state.last_sun_time = timestamp;
+    }
 
-		requestAnimationFrame(this.game_loop);
-	}
+    requestAnimationFrame(this.game_loop.bind(this));
+  }
 
-	private _setup_listeners() {
-		document.querySelectorAll(".plant-icon").forEach((icon) => {
-			icon.addEventListener("click", (e) => {
-				if (this._game_state.gameOver || this._game_state.paused) return;
+  private _setup_listeners() {
+    for (const icon of document.querySelectorAll(".plant-icon")) {
+      icon.addEventListener("click", (e) => {
+        if (this._game_state.is_game_over() || this._game_state.is_paused())
+          return;
 
-				const plantType = e.currentTarget.getAttribute("data-plant");
-				const cost = parseInt(e.currentTarget.getAttribute("data-cost"));
+        const current_target = e.currentTarget as HTMLElement;
+        const plant_type = SpriteLoader.isSprite(
+          current_target.getAttribute("data-plant") as string,
+        );
+        const cost = Number.parseInt(
+          current_target.getAttribute("data-cost") as string,
+        );
 
-				if (this._game_state.sun >= cost) {
-					this._game_state.draggingPlant = {
-						type: plantType,
-						cost: cost,
-						element: e.currentTarget,
-					};
-					e.currentTarget.style.opacity = "0.5";
+        if (this._game_state.sun >= cost) {
+          this._game_state.dragging_plant = {
+            kind: SpriteToPlantKind(plant_type),
+            cost: cost,
+            html_element: current_target,
+          };
+          current_target.style.opacity = "0.5";
 
-					const preview = document.getElementById("plantPreview");
-					preview.style.display = "block";
-					preview.style.backgroundImage = `url('${plantTypes[plantType].sprite.src}')`;
-				}
-			});
-		});
+          const preview = document.getElementById(
+            "plantPreview",
+          ) as HTMLElement;
+          preview.style.display = "block";
+          preview.style.backgroundImage = `url('${this._sprite_loader.sprites()[plant_type].src}')`;
+        }
+      });
+    }
 
-		document.addEventListener("mousemove", (e) => {
-			if (this._game_state.draggingPlant) {
-				const preview = document.getElementById("plantPreview");
-				preview.style.left = `${e.clientX - 25}px`;
-				preview.style.top = `${e.clientY - 25}px`;
-			}
-		});
+    document
+      .getElementById("testErrorButton")!
+      .addEventListener("click", () => {
+        throw new Error("Test error");
+      });
 
-		document.addEventListener("mouseup", (e) => {
-			const preview = document.getElementById("plantPreview");
-			preview.style.display = "none";
+    document.addEventListener("mousemove", (e) => {
+      if (this._game_state.dragging_plant) {
+        const preview = document.getElementById("plantPreview") as HTMLElement;
+        preview.style.left = `${e.clientX - 25}px`;
+        preview.style.top = `${e.clientY - 25}px`;
+      }
+    });
 
-			if (this._game_state.draggingPlant) {
-				this._game_state.draggingPlant.element.style.opacity = "1";
+    document.addEventListener("mouseup", (e) => {
+      const preview = document.getElementById("plantPreview") as HTMLElement;
+      preview.style.display = "none";
 
-				const gridPos = getGridPosition(e.clientX, e.clientY);
-				if (gridPos && !isGridPositionOccupied(gridPos.row, gridPos.col)) {
-					this._game_state.sun -= this._game_state.draggingPlant.cost;
-					addPlant(
-						this._game_state.draggingPlant.type,
-						gridPos.row,
-						gridPos.col,
-					);
-					updateUI();
-				}
+      if (this._game_state.dragging_plant) {
+        this._game_state.dragging_plant.html_element.style.opacity = "1";
 
-				this._game_state.draggingPlant = null;
-			}
-		});
+        const gridPos = this._game_state.get_grid_position(
+          e.clientX,
+          e.clientY,
+        );
+        if (
+          gridPos &&
+          !this._game_state.is_grid_position_occupied(gridPos.row, gridPos.col)
+        ) {
+          this._game_state.sun -= this._game_state.dragging_plant.cost;
+          if (this._game_state.dragging_plant) {
+            this._game_state.add_plant(
+              this._game_state.dragging_plant.kind,
+              gridPos.row,
+              gridPos.col,
+            );
+          }
+          this._game_state.update_ui();
+        }
 
-		this._canvas_handler.mut_canvas().addEventListener("click", (e) => {
-			if (this._game_state.gameOver || this._game_state.paused) return;
+        this._game_state.dragging_plant = null;
+      }
+    });
 
-			if (this._game_state.suns) {
-				const rect = this._canvas_handler.canvas().getBoundingClientRect();
-				const clickX = e.clientX - rect.left;
-				const clickY = e.clientY - rect.top;
+    this._canvas_handler.mut_canvas().addEventListener("click", (e) => {
+      if (this._game_state.is_game_over() || this._game_state.is_paused())
+        return;
 
-				for (let i = this._game_state.suns.length - 1; i >= 0; i--) {
-					const sun = this._game_state.suns[i];
-					const distance = Math.sqrt(
-						Math.pow(clickX - sun.x, 2) + Math.pow(clickY - sun.y, 2),
-					);
+      if (this._game_state.suns) {
+        const rect = this._canvas_handler.canvas().getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
 
-					if (distance < 30 && !sun.collected) {
-						sun.collected = true;
-						this._game_state.sun += sun.value;
-						updateUI();
+        for (let i = this._game_state.suns().value.length - 1; i >= 0; i--) {
+          const sun = this._game_state.suns().value[i];
+          const distance = Math.sqrt(
+            (clickX - sun.x().value) ** 2 + (clickY - sun.y().value) ** 2,
+          );
 
-						const sunEffect = document.createElement("div");
-						sunEffect.className = "sun-effect";
-						sunEffect.style.left = `${clickX - 15}px`;
-						sunEffect.style.top = `${clickY - 15}px`;
-						document.body.appendChild(sunEffect);
+          if (distance < 30 && !sun.collected()) {
+            sun.collect();
+            this._game_state.sun += sun.value();
+            this._game_state.update_ui();
 
-						setTimeout(() => {
-							document.body.removeChild(sunEffect);
-						}, 1000);
+            const sunEffect = document.createElement("div");
+            sunEffect.className = "sun-effect";
+            sunEffect.style.left = `${clickX - 15}px`;
+            sunEffect.style.top = `${clickY - 15}px`;
+            document.body.appendChild(sunEffect);
 
-						this._game_state.suns.splice(i, 1);
-						break;
-					}
-				}
-			}
-		});
+            setTimeout(() => {
+              document.body.removeChild(sunEffect);
+            }, 1000);
 
-		document.addEventListener("keydown", (e) => {
-			if (e.key === "Escape") {
-				this._game_state.paused = !this._game_state.paused;
-				document.getElementById("pauseMenu").style.display = this._game_state
-					.paused
-					? "flex"
-					: "none";
-			}
+            this._game_state.suns().mutate((s) => s.splice(i, 1));
+            break;
+          }
+        }
+      }
+    });
 
-			// Sistema de fusão de plantas (tecla M) a fazer
-			if (
-				e.key === "m" &&
-				!this._game_state.paused &&
-				!this._game_state.gameOver
-			) {
-				document.getElementById("mergeArea").style.display = "flex";
-			}
+    document.getElementById("resumeButton")!.addEventListener("click", () => {
+      this._game_state.toggle_pause();
+      document.getElementById("pauseMenu")!.style.display =
+        this._game_state.is_paused() ? "flex" : "none";
+    });
 
-			if (e.key === "Enter" && this._game_state.mergePlants.length === 2) {
-				mergePlants();
-			}
+    document.getElementById("restartButton")!.addEventListener("click", () => {
+      this._game_state.toggle_pause();
+      document.getElementById("pauseMenu")!.style.display =
+        this._game_state.is_paused() ? "flex" : "none";
+      this.game_over();
+    });
 
-			if (e.key === "1") {
-				const plant = this._game_state.plants[0];
-				const cost = plantTypes[plant.type].cost;
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this._game_state.toggle_pause();
+        document.getElementById("pauseMenu")!.style.display =
+          this._game_state.is_paused() ? "flex" : "none";
+      }
 
-				if (this._game_state.sun >= cost) {
-					this._game_state.draggingPlant = {
-						type: plant.type,
-						cost: cost,
-						element: document.querySelector(`[data-plant="${plant.type}"]`),
-					};
-					this._game_state.draggingPlant.element.style.opacity = "0.5";
-					document.getElementById("mergeArea").style.display = "none";
-				}
-			} else if (e.key === "2") {
-				this._game_state.mergePlants.push(this._game_state.plants[1]);
-				document.getElementById("mergeArea").style.display = "none";
-			}
-		});
+      // // Sistema de fusão de plantas (tecla M) a fazer
+      // if (
+      // 	e.key === "m" &&
+      // 	!this._game_state.is_paused() &&
+      // 	!this._game_state.is_game_over()
+      // ) {
+      // 	document.getElementById("mergeArea").style.display = "flex";
+      // }
 
-		document.addEventListener("keyup", (e) => {
-			if (e.key === "m") {
-				mergePlants();
-			}
-		});
-	}
+      // if (e.key === "Enter" && this._game_state.mergePlants.length === 2) {
+      // 	mergePlants();
+      // }
 
-	drawZombie(zombie) {
-		const y =
-			this._game_state.grid.offsetY +
-			zombie.row * this._game_state.grid.cellHeight +
-			this._game_state.grid.cellHeight / 2;
+      if (e.key === "1") {
+        const plant = this._game_state.plants()[0];
+        const cost = plant.cost;
 
-		if (zombie.sprite && zombie.sprite.complete) {
-			const aspectRatio = zombie.sprite.width / zombie.sprite.height;
-			const width = zombie.width;
-			const height = zombie.width / aspectRatio;
+        if (this._game_state.sun >= cost) {
+          this._game_state.dragging_plant = {
+            kind: plant.kind,
+            cost: cost,
+            html_element: document.querySelector(
+              `[data-plant="${plant.kind}"]`,
+            ) as HTMLElement,
+          };
+          this._game_state.dragging_plant.html_element.style.opacity = "0.5";
+          document.getElementById("mergeArea")!.style.display = "none";
+        }
+      } else if (e.key === "2") {
+        // this._game_state.mergePlants.push(this._game_state.plants()[1]);
+        document.getElementById("mergeArea")!.style.display = "none";
+      }
+    });
 
-			this._canvas_handler
-				.ctx()
-				.drawImage(
-					zombie.sprite,
-					zombie.x - width / 2,
-					y - height / 2,
-					width,
-					height,
-				);
-		} else {
-			this._canvas_handler.mut_ctx().fillStyle = zombie.color;
-			this._canvas_handler.ctx().beginPath();
-			this._canvas_handler.ctx().arc(zombie.x, y, 20, 0, Math.PI * 2);
-			this._canvas_handler.ctx().fill();
-		}
+    // document.addEventListener("keyup", (e) => {
+    // 	if (e.key === "m") {
+    // 		mergePlants();
+    // 	}
+    // });
+  }
 
-		const healthPercent = zombie.health / zombie.maxHealth;
-		this._canvas_handler.mut_ctx().fillStyle =
-			healthPercent > 0.5
-				? "#4CAF50"
-				: healthPercent > 0.2
-					? "#FFC107"
-					: "#F44336";
-		this._canvas_handler
-			.ctx()
-			.fillRect(
-				zombie.x - 20,
-				y - zombie.height / 2 - 10,
-				40 * healthPercent,
-				5,
-			);
-	}
+  private _draw_grid() {
+    const { rows, cols, cellWidth, cellHeight, offsetX, offsetY } =
+      this._game_state.grid();
 
-	private _draw_grid() {
-		const { rows, cols, cellWidth, cellHeight, offsetX, offsetY } =
-			this._game_state.grid;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = offsetX + col * cellWidth;
+        const y = offsetY + row * cellHeight;
 
-		for (let row = 0; row < rows; row++) {
-			for (let col = 0; col < cols; col++) {
-				const x = offsetX + col * cellWidth;
-				const y = offsetY + row * cellHeight;
+        this._canvas_handler.mut_ctx().fillStyle =
+          (row + col) % 2 === 0 ? "#8ed04b" : "#7fbf3b";
+        this._canvas_handler.mut_ctx().fillRect(x, y, cellWidth, cellHeight);
+      }
+    }
+  }
 
-				this._canvas_handler.mut_ctx().fillStyle =
-					(row + col) % 2 === 0 ? "#8ed04b" : "#7fbf3b";
-				this._canvas_handler.mut_ctx().fillRect(x, y, cellWidth, cellHeight);
-			}
-		}
-	}
+  private _generate_random_sun(): Sun {
+    const sun = new Sun(
+      Math.random() * (this._canvas_handler.canvas().width - 100) + 50,
+      0,
+      this._game_state,
+    );
+    sun.target_y().value =
+      Math.random() * (this._canvas_handler.canvas().height - 200) + 100;
+    this._game_state.suns().mutate((s) => s.push(sun));
+    return sun;
+  }
 
-	private _generate_random_sun():Sun {
-		const sun = new Sun(
-			Math.random() * (this._canvas_handler.canvas().width - 100) + 50,
-			0,
-		);
-		sun.targetY =
-			Math.random() * (this._canvas_handler.canvas().height - 200) + 100;
-		this._game_state.push_sun(sun);
-		return sun;
-	}
+  private game_over() {
+    this._game_state.game_over();
 
-	game_over() {
-		this._game_state.gameOver = true;
+    this._canvas_handler.mut_ctx().fillStyle = "rgba(0, 0, 0, 0.7)";
+    this._canvas_handler
+      .ctx()
+      .fillRect(
+        0,
+        0,
+        this._canvas_handler.canvas().width,
+        this._canvas_handler.canvas().height,
+      );
 
-		this._canvas_handler.mut_ctx().fillStyle = "rgba(0, 0, 0, 0.7)";
-		this._canvas_handler
-			.ctx()
-			.fillRect(
-				0,
-				0,
-				this._canvas_handler.canvas().width,
-				this._canvas_handler.canvas().height,
-			);
+    this._canvas_handler.mut_ctx().fillStyle = "white";
+    this._canvas_handler.mut_ctx().font = "48px Arial";
+    this._canvas_handler.mut_ctx().textAlign = "center";
+    this._canvas_handler
+      .ctx()
+      .fillText(
+        "Game Over",
+        this._canvas_handler.canvas().width / 2,
+        this._canvas_handler.canvas().height / 2,
+      );
 
-		this._canvas_handler.mut_ctx().fillStyle = "white";
-		this._canvas_handler.mut_ctx().font = "48px Arial";
-		this._canvas_handler.mut_ctx().textAlign = "center";
-		this._canvas_handler
-			.ctx()
-			.fillText(
-				"Game Over",
-				this._canvas_handler.canvas().width / 2,
-				this._canvas_handler.canvas().height / 2,
-			);
+    this._canvas_handler.mut_ctx().font = "24px Arial";
+    this._canvas_handler
+      .ctx()
+      .fillText(
+        `Você sobreviveu a ${this._wave_system.current_wave()} waves`,
+        this._canvas_handler.canvas().width / 2,
+        this._canvas_handler.canvas().height / 2 + 50,
+      );
 
-		this._canvas_handler.mut_ctx().font = "24px Arial";
-		this._canvas_handler
-			.ctx()
-			.fillText(
-				`Você sobreviveu a ${this._game_state.waveCount} waves`,
-				this._canvas_handler.canvas().width / 2,
-				this._canvas_handler.canvas().height / 2 + 50,
-			);
+    this._canvas_handler.mut_ctx().fillStyle = "#4CAF50";
+    this._canvas_handler
+      .ctx()
+      .fillRect(
+        this._canvas_handler.canvas().width / 2 - 100,
+        this._canvas_handler.canvas().height / 2 + 100,
+        200,
+        50,
+      );
+    this._canvas_handler.mut_ctx().fillStyle = "white";
+    this._canvas_handler.mut_ctx().font = "20px Arial";
+    this._canvas_handler
+      .ctx()
+      .fillText(
+        "Jogar Novamente",
+        this._canvas_handler.canvas().width / 2,
+        this._canvas_handler.canvas().height / 2 + 130,
+      );
 
-		this._canvas_handler.mut_ctx().fillStyle = "#4CAF50";
-		this._canvas_handler
-			.ctx()
-			.fillRect(
-				this._canvas_handler.canvas().width / 2 - 100,
-				this._canvas_handler.canvas().height / 2 + 100,
-				200,
-				50,
-			);
-		this._canvas_handler.mut_ctx().fillStyle = "white";
-		this._canvas_handler.mut_ctx().font = "20px Arial";
-		this._canvas_handler
-			.ctx()
-			.fillText(
-				"Jogar Novamente",
-				this._canvas_handler.canvas().width / 2,
-				this._canvas_handler.canvas().height / 2 + 130,
-			);
+    this._canvas_handler.canvas().addEventListener(
+      "click",
+      (e) => {
+        const rect = this._canvas_handler.canvas().getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-		this._canvas_handler.canvas().addEventListener(
-			"click",
-			(e) => {
-				const rect = this._canvas_handler.canvas().getBoundingClientRect();
-				const x = e.clientX - rect.left;
-				const y = e.clientY - rect.top;
+        if (
+          x >= this._canvas_handler.canvas().width / 2 - 100 &&
+          x <= this._canvas_handler.canvas().width / 2 + 100 &&
+          y >= this._canvas_handler.canvas().height / 2 + 100 &&
+          y <= this._canvas_handler.canvas().height / 2 + 150
+        )
+          this.reset_game();
+      },
+      { once: true },
+    );
+  }
 
-				if (
-					x >= this._canvas_handler.canvas().width / 2 - 100 &&
-					x <= this._canvas_handler.canvas().width / 2 + 100 &&
-					y >= this._canvas_handler.canvas().height / 2 + 100 &&
-					y <= this._canvas_handler.canvas().height / 2 + 150
-				)
-					this.reset_game();
-			},
-			{ once: true },
-		);
-	}
+  private reset_game() {
+    this._game_state.reset();
+    this._wave_system.reset();
 
-	resetGame() {
-		this._game_state.reset();
-		this._wave_system.currentWave = 0;
-		this._wave_system.zombiesSpawned = 0;
-		this._wave_system.waveActive = false;
-		this._wave_system.lastWaveTime = 0;
-
-		this._game_state.update_ui();
-		requestAnimationFrame(this.game_loop);
-	}
+    this._game_state.update_ui();
+    requestAnimationFrame(this.game_loop.bind(this));
+  }
 }
 
 export default Game;
