@@ -1,9 +1,9 @@
 export enum ToWorkerMessageType {
   MusicStart = 0,
   MusicPause,
-  MusicStop
+  MusicStop,
 }
 
 export enum FromWorkerMessageType {
-  Time
+  Time,
 }

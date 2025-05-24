@@ -1,18 +1,13 @@
-enum InGameSongs {
-  
-}
+enum InGameSongs {}
 
 export default class SoundSystem {
-
   private _in_game_soundtrack?: HTMLAudioElement[];
   private _current_song: number = 0;
   private _audio_worker = new Worker("./SoundWorker.ts");
   private _music_timestamp_paused = 0;
   private _playing = false;
 
-  constructor() {
-
-  }
+  constructor() {}
 
   public async load() {
     const in_game_soundtrack = [];
@@ -24,14 +19,10 @@ export default class SoundSystem {
   }
 
   public play_in_game_music() {
-    this._in_game_soundtrack![0].onended
+    this._in_game_soundtrack![0].onended;
   }
 
-  public toggle_pause() {
+  public toggle_pause() {}
 
-  }
-
-  public stop() {
-
-  }
+  public stop() {}
 }

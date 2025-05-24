@@ -1,3 +1,1 @@
-self.onmessage = (e: MessageEvent<number>) => {
-  
-}
+self.onmessage = (e: MessageEvent<number>) => {};
