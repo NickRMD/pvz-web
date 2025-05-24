@@ -53,9 +53,9 @@ abstract class Zombie extends Entity {
 
   public draw(ctx: CanvasRenderingContext2D) {
     const y =
-      this._game_state.grid().offsetY +
-      this._row * this._game_state.grid().cellHeight +
-      this._game_state.grid().cellHeight / 2;
+      this._game_state.grid().offset_y +
+      this._row * this._game_state.grid().cell_height +
+      this._game_state.grid().cell_height / 2;
 
     const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
     if (sprite.complete) {

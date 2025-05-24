@@ -30,12 +30,12 @@ export default class Peashooter extends Plant {
         .find(
           (z) =>
             z.row() === this._row &&
-            z.x().value > this._col * this._game_state.grid().cellWidth &&
-            z.x().value >= this._game_state.grid().offsetX &&
+            z.x().value > this._col * this._game_state.grid().cell_width &&
+            z.x().value >= this._game_state.grid().offset_x &&
             z.x().value <=
-              this._game_state.grid().offsetX +
+              this._game_state.grid().offset_x +
                 this._game_state.grid().cols *
-                  this._game_state.grid().cellWidth,
+                  this._game_state.grid().cell_width,
         );
 
       if (zombieInRow) {

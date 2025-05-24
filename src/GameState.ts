@@ -37,10 +37,10 @@ class GameState {
   private _grid = {
     rows: 5,
     cols: 9,
-    cellWidth: 0,
-    cellHeight: 0,
-    offsetX: 0,
-    offsetY: 0,
+    cell_width: 0,
+    cell_height: 0,
+    offset_x: 0,
+    offset_y: 0,
   };
   private _initialized = false;
   private _game_over = false;
@@ -65,8 +65,8 @@ class GameState {
   }
 
   private _resize_grid() {
-    this._grid.cellHeight = this._canvas_handler.canvas().height / 5;
-    this._grid.cellWidth = this._canvas_handler.grass_width() / 9;
+    this._grid.cell_height = this._canvas_handler.canvas().height / 5;
+    this._grid.cell_width = this._canvas_handler.grass_width() / 9;
   }
 
   public initialize(
@@ -142,8 +142,8 @@ class GameState {
   }
 
   public get_grid_position(x: number, y: number) {
-    const col = Math.floor((x - this._grid.offsetX) / this._grid.cellWidth);
-    const row = Math.floor((y - this._grid.offsetY) / this._grid.cellHeight);
+    const col = Math.floor((x - this._grid.offset_x) / this._grid.cell_width);
+    const row = Math.floor((y - this._grid.offset_y) / this._grid.cell_height);
 
     if (
       row >= 0 &&
@@ -154,8 +154,8 @@ class GameState {
       return {
         row,
         col,
-        x: this._grid.offsetX + col * this._grid.cellWidth,
-        y: this._grid.offsetY + row * this._grid.cellHeight,
+        x: this._grid.offset_x + col * this._grid.cell_width,
+        y: this._grid.offset_y + row * this._grid.cell_height,
       };
     }
     return null;
@@ -222,9 +222,9 @@ class GameState {
           plant.x().value,
           plant.y().value,
           zombie.x().value,
-          this._grid.offsetY +
-            zombie.row() * this._grid.cellHeight +
-            this._grid.cellHeight / 2,
+          this._grid.offset_y +
+            zombie.row() * this._grid.cell_height +
+            this._grid.cell_height / 2,
           plant.damage(),
           5,
           this,

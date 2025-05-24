@@ -91,8 +91,8 @@ class Game {
 
       const gridPos = this._game_state.get_grid_position(
         zombie.x().value,
-        this._game_state.grid().offsetY +
-          zombie.row() * this._game_state.grid().cellHeight,
+        this._game_state.grid().offset_y +
+          zombie.row() * this._game_state.grid().cell_height,
       );
       if (gridPos) {
         const plant = this._game_state
@@ -113,7 +113,7 @@ class Game {
         }
       }
 
-      if (zombie.x().value < this._game_state.grid().offsetX) {
+      if (zombie.x().value < this._game_state.grid().offset_x) {
         this.game_over();
         return;
       }
@@ -319,17 +319,17 @@ class Game {
   }
 
   private _draw_grid() {
-    const { rows, cols, cellWidth, cellHeight, offsetX, offsetY } =
+    const { rows, cols, cell_width, cell_height, offset_x, offset_y } =
       this._game_state.grid();
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        const x = offsetX + col * cellWidth;
-        const y = offsetY + row * cellHeight;
+        const x = offset_x + col * cell_width;
+        const y = offset_y + row * cell_height;
 
         this._canvas_handler.mut_ctx().fillStyle =
           (row + col) % 2 === 0 ? "#8ed04b" : "#7fbf3b";
-        this._canvas_handler.mut_ctx().fillRect(x, y, cellWidth, cellHeight);
+        this._canvas_handler.mut_ctx().fillRect(x, y, cell_width, cell_height);
       }
     }
   }

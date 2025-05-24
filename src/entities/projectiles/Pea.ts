@@ -12,9 +12,9 @@ class Pea extends Projectile {
       const dx = this._x.value - zombie.x().value;
       const dy =
         this._y.value -
-        (this._game_state.grid().offsetY +
-          zombie.row() * this._game_state.grid().cellHeight +
-          this._game_state.grid().cellHeight / 2);
+        (this._game_state.grid().offset_y +
+          zombie.row() * this._game_state.grid().cell_height +
+          this._game_state.grid().cell_height / 2);
       const distance = Math.sqrt(dx ** 2 + dy ** 2);
 
       if (distance < this._width / 2 + zombie.width() / 2) {

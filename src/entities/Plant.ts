@@ -24,14 +24,14 @@ abstract class Plant extends Entity {
     // Não pelo amor de Deus
     // Object.assign(this, plantTypes[type]); 😠
     this._x = new Signal(
-      this._game_state.grid().offsetX +
-        col * this._game_state.grid().cellWidth +
-        this._game_state.grid().cellWidth / 2,
+      this._game_state.grid().offset_x +
+        col * this._game_state.grid().cell_width +
+        this._game_state.grid().cell_width / 2,
     );
     this._y = new Signal(
-      this._game_state.grid().offsetY +
-        row * this._game_state.grid().cellHeight +
-        this._game_state.grid().cellHeight / 2,
+      this._game_state.grid().offset_y +
+        row * this._game_state.grid().cell_height +
+        this._game_state.grid().cell_height / 2,
     );
   }
 
