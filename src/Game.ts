@@ -10,11 +10,10 @@ class Game {
   private _sprite_loader = new SpriteLoader();
   private _canvas_handler = new CanvasHandler();
   private _game_state: GameState;
-  private _collision_system: CollisionSystem;
+  private _collision_system = new CollisionSystem();
   private _wave_system: WaveSystem;
 
   constructor() {
-    this._collision_system = new CollisionSystem();
     this._game_state = new GameState(this._sprite_loader, this._canvas_handler);
     this._wave_system = new WaveSystem(
       this._game_state.rows.bind(this._game_state),
@@ -24,6 +23,15 @@ class Game {
       this._wave_system.current_wave.bind(this._wave_system),
       this._wave_system.level.bind(this._wave_system),
     );
+  }
+
+  public error_pause() {
+    if (!this._game_state.is_paused()) {
+      console.error("An error ocurred, game paused");
+      this._game_state.toggle_pause();
+      document.getElementById("pauseMenu")!.style.display =
+        this._game_state.is_paused() ? "flex" : "none";
+    }
   }
 
   public async start() {
@@ -36,16 +44,16 @@ class Game {
       document.getElementById("loading")!.style.display = "none";
       this._game_state.update_ui();
       // playStartSound();
-      requestAnimationFrame(this.game_loop.bind(this));
+      requestAnimationFrame(this._game_loop.bind(this));
     } else {
       throw new Error("There was an error loading sprites!");
     }
   }
 
-  private game_loop(timestamp: number) {
+  private _game_loop(timestamp: number) {
     if (this._game_state.is_game_over()) return;
     if (this._game_state.is_paused()) {
-      requestAnimationFrame(this.game_loop.bind(this));
+      requestAnimationFrame(this._game_loop.bind(this));
       return;
     }
 
@@ -114,7 +122,7 @@ class Game {
       }
 
       if (zombie.x().value < this._game_state.grid().offset_x) {
-        this.game_over();
+        this._game_over();
         return;
       }
     }
@@ -142,7 +150,7 @@ class Game {
       this._game_state.last_sun_time = timestamp;
     }
 
-    requestAnimationFrame(this.game_loop.bind(this));
+    requestAnimationFrame(this._game_loop.bind(this));
   }
 
   private _setup_listeners() {
@@ -267,7 +275,7 @@ class Game {
       this._game_state.toggle_pause();
       document.getElementById("pauseMenu")!.style.display =
         this._game_state.is_paused() ? "flex" : "none";
-      this.game_over();
+      this._game_over();
     });
 
     document.addEventListener("keydown", (e) => {
@@ -346,7 +354,7 @@ class Game {
     return sun;
   }
 
-  private game_over() {
+  private _game_over() {
     this._game_state.game_over();
 
     this._canvas_handler.mut_ctx().fillStyle = "rgba(0, 0, 0, 0.7)";
@@ -411,18 +419,18 @@ class Game {
           y >= this._canvas_handler.canvas().height / 2 + 100 &&
           y <= this._canvas_handler.canvas().height / 2 + 150
         )
-          this.reset_game();
+          this._reset_game();
       },
       { once: true },
     );
   }
 
-  private reset_game() {
+  private _reset_game() {
     this._game_state.reset();
     this._wave_system.reset();
 
     this._game_state.update_ui();
-    requestAnimationFrame(this.game_loop.bind(this));
+    requestAnimationFrame(this._game_loop.bind(this));
   }
 }
 
