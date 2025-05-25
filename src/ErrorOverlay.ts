@@ -14,7 +14,9 @@ class ErrorOverlay {
 
     window.onunhandledrejection = (event) => {
       game.error_pause();
-      this._errors.mutate((e) => e.push(`Unhandled Promise Rejection: ${event.reason}`));
+      this._errors.mutate((e) =>
+        e.push(`Unhandled Promise Rejection: ${event.reason}`),
+      );
     };
 
     this._errors.subscribe((errors) => {
