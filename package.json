@@ -1,0 +1,30 @@
+{
+  "name": "pvz-web",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Plants VS Zombies WEB is a fan-made browser game inspired by the original Plants vs Zombies created by PopCap Games and published by Electronic Arts. This project is a tribute to the original game and aims to bring the fun and strategy of defending your garden against waves of zombies to the web.",
+  "main": "./src/main.js",
+  "author": "Samuel Conradt do Amaral",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "biome lint ./src",
+    "format": "biome format ./src --write"
+  },
+  "devdependencies": {
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/assert": "^1.5.11",
+    "@types/node": "^22.15.17",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "assert": "^2.1.0",
+    "ts-pattern": "^5.7.0"
+  }
+}
