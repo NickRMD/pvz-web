@@ -12,5 +12,10 @@
     "ignore": [
       "node_modules"
     ]
+  },
+  "files": {
+    "ignore": [
+      "src/errorInduce.ts"
+    ]
   }
 }
