@@ -3,7 +3,9 @@ import { SpriteKeyEnum } from "../../SpriteLoader";
 import Signal from "../../utils/Signal";
 
 class ZombieBucket extends Zombie {
-  protected readonly _base_health = 100;
+  protected _base_health() {
+    return 300;
+  }
   protected _damage = new Signal(1);
   public speed = 0.3;
 

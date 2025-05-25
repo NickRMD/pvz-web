@@ -8,27 +8,34 @@ abstract class Zombie extends Entity {
   private readonly _row: number;
   protected _max_health: number;
   protected _health: Signal<number>;
-  protected abstract _base_health: number;
   protected _target_y: undefined;
   protected _target_x: undefined;
   protected abstract _damage: Signal<number>;
   public abstract speed: number;
 
+  protected abstract _base_health(): number;
+
   constructor(
     row: number,
     x: number,
     difficulty: Difficulty,
-    level: number,
+    current_level: number,
     game_state: GameState,
   ) {
     super(game_state);
 
+    let level = current_level;
+
+    if (level === 0) level = 0.5;
+
     const health = match(difficulty)
-      .with(Difficulty.Easy, () => this._base_health * (level / 4))
-      .with(Difficulty.Normal, () => this._base_health * (level / 3))
-      .with(Difficulty.Hard, () => this._base_health * (level / 2))
-      .with(Difficulty.Nightmare, () => this._base_health * level)
+      .returnType<number>()
+      .with(Difficulty.Easy, () => this._base_health() * (level / 4))
+      .with(Difficulty.Normal, () => this._base_health() * (level / 3))
+      .with(Difficulty.Hard, () => this._base_health() * (level / 2))
+      .with(Difficulty.Nightmare, () => this._base_health() * level)
       .exhaustive();
+    console.log(health);
 
     this._health = new Signal(health);
     this._max_health = health;

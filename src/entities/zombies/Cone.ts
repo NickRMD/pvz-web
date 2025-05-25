@@ -3,7 +3,9 @@ import { SpriteKeyEnum } from "../../SpriteLoader";
 import Signal from "../../utils/Signal";
 
 class ZombieCone extends Zombie {
-  protected readonly _base_health = 100;
+  protected _base_health() {
+    return 200;
+  }
   protected _damage = new Signal(0.5);
   public speed = 0.4;
 
