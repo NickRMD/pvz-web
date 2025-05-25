@@ -1,34 +1,12 @@
 import "./style.css";
+import "./errorInduce";
 import Game from "./Game";
+import ErrorOverlay from "./ErrorOverlay";
 
-window.onerror = (message, source, lineno, colno, _error) => {
-  showErrorOverlay(`Error: ${message}\nFile: ${source}:${lineno}:${colno}`);
-};
+const game = new Game();
 
-window.onunhandledrejection = (event) => {
-  showErrorOverlay(`Unhandled Promise Rejection: ${event.reason}`);
-};
-
-new Game().start();
-
-// Temporary
-function showErrorOverlay(message: string) {
-  const overlay = document.createElement("div");
-  overlay.style.position = "fixed";
-  overlay.style.top = "0";
-  overlay.style.left = "0";
-  overlay.style.width = "100vw";
-  overlay.style.height = "100vh";
-  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
-  overlay.style.color = "white";
-  overlay.style.fontFamily = "monospace";
-  overlay.style.padding = "20px";
-  overlay.style.zIndex = "10000";
-  overlay.style.whiteSpace = "pre-wrap";
-  overlay.textContent = message;
-
-  document.body.appendChild(overlay);
-}
+game.start();
+new ErrorOverlay(game);
 
 // function mergePlants() { //TODO
 //     const mergeArea = document.getElementById('mergeArea');
