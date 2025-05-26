@@ -6,6 +6,7 @@ body {
 }
 canvas {
   display: block;
+  image-rendering: auto;
 }
 #ui {
   position: absolute;
