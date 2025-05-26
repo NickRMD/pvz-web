@@ -1,5 +1,4 @@
 import "./style.css";
-import "./errorInduce";
 import Game from "./Game";
 import ErrorOverlay from "./ErrorOverlay";
 
@@ -7,6 +6,16 @@ const game = new Game();
 
 game.start();
 new ErrorOverlay(game);
+
+if(import.meta.env.DEV) {
+  const modules = import.meta.glob("./utils/debug/**/*.ts");
+
+  for (const path in modules) {
+    await modules[path]();
+  }
+
+  console.log("Loaded debug tools")
+}
 
 // function mergePlants() { //TODO
 //     const mergeArea = document.getElementById('mergeArea');
