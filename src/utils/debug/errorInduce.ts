@@ -21,4 +21,4 @@ window.induce_error = () => {
     number_of_induced_errors++;
     throw new Error(`Induced error ${number_of_induced_errors} times`);
   }, 0);
-}
+};

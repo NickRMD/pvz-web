@@ -181,7 +181,7 @@ class Game {
           ) as HTMLElement;
           preview.style.display = "block";
           preview.style.backgroundImage = `url('${this._sprite_loader.sprites()[plant_type].src}')`;
-          
+
           preview.style.left = `${e.clientX - 25}px`;
           preview.style.top = `${e.clientY - 25}px`;
         }
@@ -301,11 +301,9 @@ class Game {
       // if (e.key === "Enter" && this._game_state.mergePlants.length === 2) {
       // 	mergePlants();
       // }
-     
-      if (e.key === "1") {
-        
-      }
 
+      if (e.key === "1") {
+      }
 
       // if (e.key === "1") {
       //   const plant = this._game_state.plants()[0];

@@ -64,15 +64,18 @@ abstract class Zombie extends Entity {
       this._row * this._game_state.grid().cell_height +
       this._game_state.grid().cell_height / 2;
 
-    const cached_sprite = this._game_state.sprite_loader.cached_sprites()[this._sprite];
-    const sprite = cached_sprite ? cached_sprite : (() => {
-      const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
+    const cached_sprite =
+      this._game_state.sprite_loader.cached_sprites()[this._sprite];
+    const sprite = cached_sprite
+      ? cached_sprite
+      : (() => {
+          const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
 
-      const new_image = down_scale_sprite(sprite, this._width, this._width);
-      this._game_state.sprite_loader.set_sprite(this._sprite, new_image);
+          const new_image = down_scale_sprite(sprite, this._width, this._width);
+          this._game_state.sprite_loader.set_sprite(this._sprite, new_image);
 
-      return new_image;
-    })();
+          return new_image;
+        })();
 
     const aspectRatio = sprite.width / sprite.height;
     const width = this._width;
@@ -85,7 +88,6 @@ abstract class Zombie extends Entity {
       width,
       height,
     );
-
 
     const healthPercent = this._health.value / this._max_health;
     ctx.fillStyle =

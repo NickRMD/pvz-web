@@ -2,7 +2,7 @@ function resample_single(
   canvas: HTMLCanvasElement,
   width_input: number,
   height_input: number,
-  resize_canvas: boolean
+  resize_canvas: boolean,
 ): void {
   const width_source = canvas.width;
   const height_source = canvas.height;
@@ -18,7 +18,7 @@ function resample_single(
   if (!ctx) {
     throw new Error("2D context not available");
   }
-  
+
   const img = ctx.getImageData(0, 0, width_source, height_source);
   const img2 = ctx.createImageData(width, height);
   const data = img.data;
@@ -87,17 +87,16 @@ function resample_single(
   ctx.putImageData(img2, 0, 0);
 }
 
-
 export default function down_scale_image(
   img: HTMLImageElement,
   targetWidth: number,
-  targetHeight: number
+  targetHeight: number,
 ): HTMLCanvasElement {
-  const imgCV = document.createElement('canvas');
+  const imgCV = document.createElement("canvas");
   imgCV.width = img.width;
   imgCV.height = img.height;
 
-  const imgCtx = imgCV.getContext('2d');
+  const imgCtx = imgCV.getContext("2d");
   if (!imgCtx) throw new Error("2D context not available");
 
   imgCtx.drawImage(img, 0, 0);
@@ -108,11 +107,10 @@ export default function down_scale_image(
   return imgCV;
 }
 
-
 export function down_scale_sprite(
   sprite: HTMLImageElement,
   entity_width: number,
-  entity_height: number
+  entity_height: number,
 ): HTMLCanvasElement {
   const aspectRatio = sprite.width / sprite.height;
   const width = entity_width;

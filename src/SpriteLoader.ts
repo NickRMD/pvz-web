@@ -7,17 +7,18 @@ export enum SpriteKeyEnum {
   ZombieBasic = "zombie_basic",
   ZombieCone = "zombie_cone",
   ZombieBucket = "zombie_bucket",
-};
+}
 
 declare global {
   interface Window {
-    _sprite_loader: SpriteLoader
+    _sprite_loader: SpriteLoader;
   }
 }
 
 type SpriteKey = `${SpriteKeyEnum}`;
 export interface Sprites extends Record<SpriteKey, HTMLImageElement> {}
-export interface SpriteCache extends Partial<Record<SpriteKey, HTMLCanvasElement>> {}
+export interface SpriteCache
+  extends Partial<Record<SpriteKey, HTMLCanvasElement>> {}
 
 export default class SpriteLoader {
   private _sprites?: Sprites;
@@ -25,7 +26,7 @@ export default class SpriteLoader {
   private _loaded = false;
 
   constructor() {
-    if(import.meta.env.DEV) {
+    if (import.meta.env.DEV) {
       window._sprite_loader = this;
     }
   }
@@ -35,10 +36,10 @@ export default class SpriteLoader {
     const spritesArray = await Promise.all(
       spriteKeys.map(async (key) => {
         const img = new Image();
-        
+
         // Used so the image doesn't flicker when loaded
         img.style.display = "none";
-        
+
         const { default: url } = await import(`#/sprites/${key}.webp`);
         img.src = url;
         await new Promise<void>((resolve, reject) => {
@@ -58,7 +59,7 @@ export default class SpriteLoader {
 
   public set_sprite(sprite_key: SpriteKeyEnum, new_image: HTMLCanvasElement) {
     if (!this._sprites) throw Error("Sprites aren't initialized yet!");
-    console.log(`${sprite_key} cached!`)
+    console.log(`${sprite_key} cached!`);
     this._sprite_cache[sprite_key] = new_image;
   }
 

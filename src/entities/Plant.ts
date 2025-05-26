@@ -53,15 +53,22 @@ abstract class Plant extends Entity {
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    const cached_sprite = this._game_state.sprite_loader.cached_sprites()[this._sprite];
-    const sprite = cached_sprite ? cached_sprite : (() => {
-      const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
+    const cached_sprite =
+      this._game_state.sprite_loader.cached_sprites()[this._sprite];
+    const sprite = cached_sprite
+      ? cached_sprite
+      : (() => {
+          const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
 
-      const new_image = down_scale_sprite(sprite, this._width, this._height);
-      this._game_state.sprite_loader.set_sprite(this._sprite, new_image);
+          const new_image = down_scale_sprite(
+            sprite,
+            this._width,
+            this._height,
+          );
+          this._game_state.sprite_loader.set_sprite(this._sprite, new_image);
 
-      return new_image;
-    })();
+          return new_image;
+        })();
 
     const aspectRatio = sprite.width / sprite.height;
     const width = this._width;

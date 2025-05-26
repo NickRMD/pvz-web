@@ -16,58 +16,64 @@ class ErrorOverlay {
 
     window.onunhandledrejection = (event) => {
       game.error_pause();
-      this._errors.push(`Unhandled Promise Rejection: ${event.reason}`)
+      this._errors.push(`Unhandled Promise Rejection: ${event.reason}`);
       this._changed.value = true;
     };
 
     this._changed.subscribe(() => {
       this._show_error_overlay(this._errors);
-    })
+    });
 
     document.addEventListener("keyup", (e) => {
-      if(e.key === ";") this._show_error_overlay(undefined, true);
-    })
+      if (e.key === ";") this._show_error_overlay(undefined, true);
+    });
 
     this._loaded = true;
   }
 
   private _show_error_overlay(errors?: Readonly<string[]>, force_open = false) {
     if (errors && errors.length === 0 && !force_open && !this._loaded) return;
-    
-    if(force_open && this._overlay.style.display === "block") {
+
+    if (force_open && this._overlay.style.display === "block") {
       this._overlay.style.display = "none";
-    } else if(this._overlay.style.display === "none") {
+    } else if (this._overlay.style.display === "none") {
       this._overlay.style.display = "block";
     }
 
-    if(this._changed.value && errors) {
+    if (this._changed.value && errors) {
       console.log("Rerendered");
 
-      let errorContainer = this._overlay.querySelector("#errorContainer") as HTMLDivElement | null;
+      let errorContainer = this._overlay.querySelector(
+        "#errorContainer",
+      ) as HTMLDivElement | null;
 
-      if(!errorContainer) {
+      if (!errorContainer) {
         this._changed.value = false;
         return;
       }
 
       const scrollTopBefore = errorContainer.scrollTop;
 
-      const maxScrollTop = errorContainer.scrollHeight - errorContainer.clientHeight;
-      const isAtBottom = (maxScrollTop - errorContainer.scrollTop) <= 5;
+      const maxScrollTop =
+        errorContainer.scrollHeight - errorContainer.clientHeight;
+      const isAtBottom = maxScrollTop - errorContainer.scrollTop <= 5;
 
       this._overlay.innerHTML = "";
 
       this._create_overlay_skeleton(this._overlay);
 
-      errorContainer = this._overlay.querySelector("#errorContainer") as HTMLDivElement | null;
-      if(errorContainer) {
+      errorContainer = this._overlay.querySelector(
+        "#errorContainer",
+      ) as HTMLDivElement | null;
+      if (errorContainer) {
         for (const error of errors) {
           const errorMessage = document.createElement("div");
           errorMessage.textContent = error;
           errorContainer.appendChild(errorMessage);
         }
-        if(isAtBottom) {
-          errorContainer.scrollTop = errorContainer.scrollHeight - errorContainer.clientHeight;
+        if (isAtBottom) {
+          errorContainer.scrollTop =
+            errorContainer.scrollHeight - errorContainer.clientHeight;
         } else {
           errorContainer.scrollTop = scrollTopBefore;
         }
@@ -106,14 +112,14 @@ class ErrorOverlay {
     closeOverlayButton.addEventListener("click", () => {
       overlay.style.display = "none";
     });
-    
+
     const clearErrorsButton = document.createElement("button");
     clearErrorsButton.textContent = "Clear";
     clearErrorsButton.addEventListener("click", () => {
       this._errors = [];
       this._changed.value = true;
-    })
-    
+    });
+
     const buttonHolder = document.createElement("div");
     buttonHolder.appendChild(closeOverlayButton);
     buttonHolder.appendChild(clearErrorsButton);
@@ -123,7 +129,7 @@ class ErrorOverlay {
     header.style.flexDirection = "column";
     header.style.width = "fit-content";
     header.style.marginBottom = "10px";
-    header.innerHTML = "<h1>Errors</h1>"
+    header.innerHTML = "<h1>Errors</h1>";
     header.appendChild(buttonHolder);
 
     overlay.appendChild(header);

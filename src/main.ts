@@ -7,14 +7,14 @@ const game = new Game();
 game.start();
 new ErrorOverlay(game);
 
-if(import.meta.env.DEV) {
+if (import.meta.env.DEV) {
   const modules = import.meta.glob("./utils/debug/**/*.ts");
 
   for (const path in modules) {
     await modules[path]();
   }
 
-  console.log("Loaded debug tools")
+  console.log("Loaded debug tools");
 }
 
 // function mergePlants() { //TODO
