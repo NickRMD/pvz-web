@@ -1,5 +1,6 @@
 import type GameState from "../GameState";
 import { SpriteKeyEnum } from "../SpriteLoader";
+import down_scale_image from "../utils/downScaleImage";
 import Signal from "../utils/Signal";
 import Entity from "./Entity";
 
@@ -55,21 +56,23 @@ class Sun extends Entity {
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
-    if (sprite.complete) {
-      ctx.drawImage(
-        sprite,
-        this._x.value - this._width / 2,
-        this._y.value - this._height / 2,
-        this._width,
-        this._height,
-      );
-    } else {
-      ctx.fillStyle = this._hex_color;
-      ctx.beginPath();
-      ctx.arc(this._x.value, this._y.value, 20, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    const cached_sprite = this._game_state.sprite_loader.cached_sprites()[this._sprite];
+    const sprite = cached_sprite ? cached_sprite : (() => {
+      const sprite = this._game_state.sprite_loader.sprites()[this._sprite];
+
+      const new_image = down_scale_image(sprite, this._width, this._height);
+      this._game_state.sprite_loader.set_sprite(this._sprite, new_image);
+
+      return new_image;
+    })();
+
+    ctx.drawImage(
+      sprite,
+      this._x.value - this._width / 2,
+      this._y.value - this._height / 2,
+      this._width,
+      this._height,
+    );
   }
 }
 
