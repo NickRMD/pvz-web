@@ -26,7 +26,7 @@ class Game {
   }
 
   public error_pause() {
-    if (!this._game_state.is_paused()) {
+    if (!this._game_state.is_paused() && this._sprite_loader.is_loaded()) {
       console.error("An error ocurred, game paused");
       this._game_state.toggle_pause();
       document.getElementById("pauseMenu")!.style.display =
@@ -155,7 +155,8 @@ class Game {
 
   private _setup_listeners() {
     for (const icon of document.querySelectorAll(".plant-icon")) {
-      icon.addEventListener("click", (e) => {
+      icon.addEventListener("click", (evt) => {
+        const e = evt as MouseEvent;
         if (this._game_state.is_game_over() || this._game_state.is_paused())
           return;
 
@@ -180,6 +181,9 @@ class Game {
           ) as HTMLElement;
           preview.style.display = "block";
           preview.style.backgroundImage = `url('${this._sprite_loader.sprites()[plant_type].src}')`;
+          
+          preview.style.left = `${e.clientX - 25}px`;
+          preview.style.top = `${e.clientY - 25}px`;
         }
       });
     }
@@ -297,26 +301,31 @@ class Game {
       // if (e.key === "Enter" && this._game_state.mergePlants.length === 2) {
       // 	mergePlants();
       // }
-
+     
       if (e.key === "1") {
-        const plant = this._game_state.plants()[0];
-        const cost = plant.cost;
-
-        if (this._game_state.sun >= cost) {
-          this._game_state.dragging_plant = {
-            kind: plant.kind,
-            cost: cost,
-            html_element: document.querySelector(
-              `[data-plant="${plant.kind}"]`,
-            ) as HTMLElement,
-          };
-          this._game_state.dragging_plant.html_element.style.opacity = "0.5";
-          document.getElementById("mergeArea")!.style.display = "none";
-        }
-      } else if (e.key === "2") {
-        // this._game_state.mergePlants.push(this._game_state.plants()[1]);
-        document.getElementById("mergeArea")!.style.display = "none";
+        
       }
+
+
+      // if (e.key === "1") {
+      //   const plant = this._game_state.plants()[0];
+      //   const cost = plant.cost;
+      //
+      //   if (this._game_state.sun >= cost) {
+      //     this._game_state.dragging_plant = {
+      //       kind: plant.kind,
+      //       cost: cost,
+      //       html_element: document.querySelector(
+      //         `[data-plant="${plant.kind}"]`,
+      //       ) as HTMLElement,
+      //     };
+      //     this._game_state.dragging_plant.html_element.style.opacity = "0.5";
+      //     document.getElementById("mergeArea")!.style.display = "none";
+      //   }
+      // } else if (e.key === "2") {
+      //   // this._game_state.mergePlants.push(this._game_state.plants()[1]);
+      //   document.getElementById("mergeArea")!.style.display = "none";
+      // }
     });
 
     // document.addEventListener("keyup", (e) => {
@@ -337,7 +346,7 @@ class Game {
 
         this._canvas_handler.mut_ctx().fillStyle =
           (row + col) % 2 === 0 ? "#8ed04b" : "#7fbf3b";
-        this._canvas_handler.mut_ctx().fillRect(x, y, cell_width, cell_height);
+        this._canvas_handler.ctx().fillRect(x, y, cell_width, cell_height);
       }
     }
   }
