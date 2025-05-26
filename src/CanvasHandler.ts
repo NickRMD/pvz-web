@@ -5,16 +5,32 @@ class CanvasHandler {
   private _zombie_area_width = this._canvas.width * 0.2;
 
   constructor() {
-    this._ctx.imageSmoothingEnabled = false;
     this._canvas_resize();
     window.addEventListener("resize", this._canvas_resize.bind(this));
   }
 
   private _canvas_resize() {
-    this._canvas.width = window.innerWidth;
-    this._canvas.height = window.innerHeight;
-    this._grass_width = this._canvas.width * 0.8;
-    this._zombie_area_width = this._canvas.width * 0.2;
+    const scale = window.devicePixelRatio || 1;
+
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    this._canvas.style.width = `${windowWidth}px`;
+    this._canvas.style.height = `${windowHeight}px`;
+
+    this._canvas.width = windowWidth * scale;
+    this._canvas.height = windowHeight * scale;
+
+    this._ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    this._ctx.scale(scale, scale);
+
+    this._grass_width = windowWidth * 0.8;
+    this._zombie_area_width = windowWidth * 0.2;
+
+    this._ctx.imageSmoothingEnabled = true;
+    this._ctx.imageSmoothingQuality = "high";
+
     this.draw_background();
   }
 
