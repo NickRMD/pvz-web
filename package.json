@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "assert": "^2.1.0",
+    "source-map-js": "^1.2.1",
     "ts-pattern": "^5.7.0"
   }
 }
