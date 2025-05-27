@@ -12,6 +12,7 @@ export enum SpriteKeyEnum {
 declare global {
   interface Window {
     _sprite_loader: SpriteLoader;
+    SpriteLoader: typeof SpriteLoader;
   }
 }
 
@@ -26,9 +27,8 @@ export default class SpriteLoader {
   private _loaded = false;
 
   constructor() {
-    if (import.meta.env.DEV) {
-      window._sprite_loader = this;
-    }
+    window._sprite_loader = this;
+    window.SpriteLoader = SpriteLoader;
   }
 
   public async load() {
