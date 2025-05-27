@@ -9,6 +9,11 @@ export default defineConfig({
   build: {
     sourcemap: 'inline'
   },
+  esbuild: {
+    supported: {
+      'top-level-await': true
+    }
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
