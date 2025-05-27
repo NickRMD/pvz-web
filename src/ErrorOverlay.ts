@@ -28,8 +28,14 @@ class ErrorOverlay {
   }
 
   private async _on_unhandled_rejection(event: PromiseRejectionEvent) {
-    if(event.reason instanceof Error && window.onerror) {
-      window.onerror(event.reason.message, undefined, undefined, undefined, event.reason);
+    if (event.reason instanceof Error && window.onerror) {
+      window.onerror(
+        event.reason.message,
+        undefined,
+        undefined,
+        undefined,
+        event.reason,
+      );
     } else {
       this._game.error_pause();
       this._errors.push(`Unhandled Promise Rejection: ${event.reason}`);
@@ -37,31 +43,45 @@ class ErrorOverlay {
     }
   }
 
-  private async _on_error(message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
+  private async _on_error(
+    message: string | Event,
+    source?: string,
+    lineno?: number,
+    colno?: number,
+    error?: Error,
+  ) {
     this._errorQueue = this._errorQueue.then(async () => {
       this._game.error_pause();
-        
-      if(error?.stack && !import.meta.env.DEV) {
+
+      if (error?.stack && !import.meta.env.DEV) {
         const stackLine = error.stack.split("\n")[1];
         const match = stackLine.match(/:(\d+):(\d+)\)?$/);
         if (match) {
           const [_, jsLine, jsColumn] = match.map(Number);
-          const pos = await get_position_in_ts(jsLine, jsColumn, import.meta.url)
-          
+          const pos = await get_position_in_ts(
+            jsLine,
+            jsColumn,
+            import.meta.url,
+          );
+
           this._errors.push("Loading stack trace");
           this._changed.value = true;
           const stack_trace = (await map_stack_trace(error, import.meta.url))
-            .map(frame =>
+            .map((frame) =>
               frame.source
-                ? `at ${frame.name || '<anonymous>'} (${frame.source}:${frame.line}:${frame.column})`
-                : frame.originalFrame || '<unknown>'
+                ? `at ${frame.name || "<anonymous>"} (${frame.source}:${frame.line}:${frame.column})`
+                : frame.originalFrame || "<unknown>",
             )
-            .join('\n');
+            .join("\n");
           this._errors.pop();
-          this._errors.push(`${message}\nFile: ${pos.source}:${pos.line}:${pos.column}, Stack:\n${stack_trace}`);
+          this._errors.push(
+            `${message}\nFile: ${pos.source}:${pos.line}:${pos.column}, Stack:\n${stack_trace}`,
+          );
         }
       } else {
-        this._errors.push(`${message}\nFile: ${source}:${lineno}:${colno}, Stack:\n${error?.stack}`);
+        this._errors.push(
+          `${message}\nFile: ${source}:${lineno}:${colno}, Stack:\n${error?.stack}`,
+        );
       }
       this._changed.value = true;
     });

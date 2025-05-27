@@ -62,10 +62,10 @@ class WaveSystem {
 
     if (!this._wave_active) {
       this._time_since_last_wave += delta;
-      if(this._time_since_last_wave >= this._wave_cooldown) {
+      if (this._time_since_last_wave >= this._wave_cooldown) {
         this.start_next_wave();
       }
-      return
+      return;
     }
 
     this._time_since_last_spawn += delta;

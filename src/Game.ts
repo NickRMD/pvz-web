@@ -100,10 +100,12 @@ class Game {
       .projectiles()
       .filter((proj) => !proj.reached());
 
-    this._game_state.entities().value = this._game_state.entities().value.filter(e => !(e instanceof Projectile));
+    this._game_state.entities().value = this._game_state
+      .entities()
+      .value.filter((e) => !(e instanceof Projectile));
 
-    for(const p of filtered_projectiles) {
-      this._game_state.entities().mutate(e => e.push(p))
+    for (const p of filtered_projectiles) {
+      this._game_state.entities().mutate((e) => e.push(p));
     }
 
     for (const zombie of this._game_state.mut_zombies()) {
@@ -127,7 +129,9 @@ class Game {
           if (plant.health().value <= 0) {
             this._game_state
               .entities()
-              .mutate(e => e.splice(this._game_state.plants().indexOf(plant), 1));
+              .mutate((e) =>
+                e.splice(this._game_state.plants().indexOf(plant), 1),
+              );
             zombie.speed = 0.5;
           }
         }
@@ -144,10 +148,12 @@ class Game {
         .suns()
         .filter((sun) => !sun.collected());
 
-      this._game_state.entities().value = this._game_state.entities().value.filter(e => !(e instanceof Sun));
+      this._game_state.entities().value = this._game_state
+        .entities()
+        .value.filter((e) => !(e instanceof Sun));
 
       for (const sun of filtered_suns) {
-        this._game_state.entities().mutate(e => e.push(sun));
+        this._game_state.entities().mutate((e) => e.push(sun));
       }
     }
 
@@ -272,9 +278,13 @@ class Game {
               document.body.removeChild(sunEffect);
             }, 1000);
 
-            const index_in_entities = this._game_state.entities().value.indexOf(sun);
+            const index_in_entities = this._game_state
+              .entities()
+              .value.indexOf(sun);
             if (index_in_entities !== -1) {
-              this._game_state.entities().mutate((s) => s.splice(index_in_entities, 1));
+              this._game_state
+                .entities()
+                .mutate((s) => s.splice(index_in_entities, 1));
             }
 
             break;

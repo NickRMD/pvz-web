@@ -4,7 +4,7 @@ import ErrorOverlay from "./ErrorOverlay";
 
 declare global {
   interface Window {
-    _game: Game
+    _game: Game;
   }
 }
 

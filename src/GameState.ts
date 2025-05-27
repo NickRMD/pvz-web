@@ -103,11 +103,11 @@ class GameState {
   public entities() {
     return this._entities;
   }
-  
+
   public remove_entities(predicate: (e: Entity) => boolean) {
     for (let i = 0; i < this._entities.value.length; ) {
       if (predicate(this._entities.value[i])) {
-        this._entities.mutate(e => e.splice(i, 1));
+        this._entities.mutate((e) => e.splice(i, 1));
       } else {
         i++;
       }
@@ -115,27 +115,27 @@ class GameState {
   }
 
   public projectiles() {
-    return this._entities.value.filter(e => e instanceof Projectile);
+    return this._entities.value.filter((e) => e instanceof Projectile);
   }
 
   public suns() {
-    return this._entities.value.filter(e => e instanceof Sun)
+    return this._entities.value.filter((e) => e instanceof Sun);
   }
 
   public zombies(): Readonly<Zombie[]> {
-    return this._entities.value.filter(e => e instanceof Zombie)
+    return this._entities.value.filter((e) => e instanceof Zombie);
   }
 
   public mut_zombies() {
-    return this._entities.value.filter(e => e instanceof Zombie)
+    return this._entities.value.filter((e) => e instanceof Zombie);
   }
 
   public plants(): Readonly<Plant[]> {
-    return this._entities.value.filter(e => e instanceof Plant)
+    return this._entities.value.filter((e) => e instanceof Plant);
   }
 
   public mut_plants() {
-    return this._entities.value.filter(e => e instanceof Plant)
+    return this._entities.value.filter((e) => e instanceof Plant);
   }
 
   public grid(): Readonly<typeof this._grid> {
@@ -183,7 +183,7 @@ class GameState {
       .with(PlantKind.Walnut, () => new Walnut(row, col, this))
       .exhaustive();
 
-    this._entities.mutate(e => e.push(plant));
+    this._entities.mutate((e) => e.push(plant));
     return plant;
   }
 
@@ -211,7 +211,7 @@ class GameState {
       )
       .exhaustive();
 
-    this._entities.mutate(e => e.push(zombie));
+    this._entities.mutate((e) => e.push(zombie));
     this.update_ui();
     return zombie;
   }
@@ -241,13 +241,13 @@ class GameState {
       })
       .exhaustive();
 
-    this._entities.mutate(p => p.push(projectile));
+    this._entities.mutate((p) => p.push(projectile));
   }
 
   public produce_sun(x: number, y: number) {
     const sun = new Sun(x, y, this);
     sun.target_y().value = y + 100;
-    this._entities.mutate(s => s.push(sun));
+    this._entities.mutate((s) => s.push(sun));
     return sun;
   }
 
