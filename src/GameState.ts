@@ -2,12 +2,12 @@ import { match, P } from "ts-pattern";
 import ZombieKind, {
   CommonZombieClasses,
 } from "./entities/entityKinds/ZombieKind";
-import type Plant from "./entities/Plant";
+import Plant from "./entities/Plant";
 import Sunflower from "./entities/plants/Sunflower";
-import type Projectile from "./entities/Projectile";
+import Projectile from "./entities/Projectile";
 import Pea from "./entities/projectiles/Pea";
 import Sun from "./entities/Sun";
-import type Zombie from "./entities/Zombie";
+import Zombie from "./entities/Zombie";
 import PlantKind from "./entities/entityKinds/PlantKind";
 import Peashooter from "./entities/plants/Peashooter";
 import Walnut from "./entities/plants/Walnut";
@@ -17,6 +17,7 @@ import type CanvasHandler from "./CanvasHandler";
 import type SpriteLoader from "./SpriteLoader";
 import ProjectileKind from "./entities/entityKinds/ProjectileKind";
 import type { ProjectileDirection } from "./entities/entityKinds/ProjectileKind";
+import type Entity from "./entities/Entity";
 
 interface PlantSelection {
   kind: PlantKind;
@@ -26,10 +27,7 @@ interface PlantSelection {
 
 class GameState {
   public sun = 50;
-  private _plants: Plant[] = [];
-  private _zombies: Zombie[] = [];
-  private _projectiles: Signal<Projectile[]> = new Signal([] as Projectile[]);
-  private _suns: Signal<Sun[]> = new Signal([] as Sun[]);
+  private _entities: Signal<Entity[]> = new Signal([] as Entity[]);
   // private _last_zombie_time = 0;
   // private _zombie_interval = 5000;
   public readonly sun_interval = 5000;
@@ -102,28 +100,42 @@ class GameState {
     return this._grid.rows;
   }
 
+  public entities() {
+    return this._entities;
+  }
+  
+  public remove_entities(predicate: (e: Entity) => boolean) {
+    for (let i = 0; i < this._entities.value.length; ) {
+      if (predicate(this._entities.value[i])) {
+        this._entities.mutate(e => e.splice(i, 1));
+      } else {
+        i++;
+      }
+    }
+  }
+
   public projectiles() {
-    return this._projectiles;
+    return this._entities.value.filter(e => e instanceof Projectile);
   }
 
   public suns() {
-    return this._suns;
+    return this._entities.value.filter(e => e instanceof Sun)
   }
 
-  public zombies(): Readonly<typeof this._zombies> {
-    return this._zombies;
+  public zombies(): Readonly<Zombie[]> {
+    return this._entities.value.filter(e => e instanceof Zombie)
   }
 
   public mut_zombies() {
-    return this._zombies;
+    return this._entities.value.filter(e => e instanceof Zombie)
   }
 
-  public plants(): Readonly<typeof this._plants> {
-    return this._plants;
+  public plants(): Readonly<Plant[]> {
+    return this._entities.value.filter(e => e instanceof Plant)
   }
 
   public mut_plants() {
-    return this._plants;
+    return this._entities.value.filter(e => e instanceof Plant)
   }
 
   public grid(): Readonly<typeof this._grid> {
@@ -132,10 +144,7 @@ class GameState {
 
   reset() {
     this.sun = 50;
-    this._plants = [];
-    this._zombies = [];
-    this._projectiles.value = [];
-    this._suns.value = [];
+    this._entities.value = [];
     // this._last_zombie_time = 0;
     // this._zombie_interval = 5000;
     this._game_over = false;
@@ -162,7 +171,7 @@ class GameState {
   }
 
   public is_grid_position_occupied(row: number, col: number) {
-    return this._plants.some(
+    return this.plants().some(
       (plant) => plant.row() === row && plant.col() === col,
     );
   }
@@ -174,7 +183,7 @@ class GameState {
       .with(PlantKind.Walnut, () => new Walnut(row, col, this))
       .exhaustive();
 
-    this._plants.push(plant);
+    this._entities.mutate(e => e.push(plant));
     return plant;
   }
 
@@ -202,7 +211,7 @@ class GameState {
       )
       .exhaustive();
 
-    this._zombies.push(zombie);
+    this._entities.mutate(e => e.push(zombie));
     this.update_ui();
     return zombie;
   }
@@ -232,13 +241,13 @@ class GameState {
       })
       .exhaustive();
 
-    this._projectiles.mutate((p) => p.push(projectile));
+    this._entities.mutate(p => p.push(projectile));
   }
 
   public produce_sun(x: number, y: number) {
     const sun = new Sun(x, y, this);
     sun.target_y().value = y + 100;
-    this._suns.mutate((s) => s.push(sun));
+    this._entities.mutate(s => s.push(sun));
     return sun;
   }
 
@@ -249,7 +258,7 @@ class GameState {
   public update_ui() {
     document.getElementById("sunCount")!.textContent = this.sun.toString();
     document.getElementById("zombieCount")!.textContent =
-      this._zombies.length.toString();
+      this.zombies().length.toString();
     document.getElementById("waveCount")!.textContent =
       this._wave_count().toString();
     document.getElementById("levelCount")!.textContent =
