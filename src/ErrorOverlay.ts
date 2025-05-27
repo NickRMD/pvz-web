@@ -1,4 +1,5 @@
 import type Game from "./Game";
+import get_position_in_ts, { map_stack_trace } from "./utils/getPositionInTS";
 import Signal from "./utils/Signal";
 
 class ErrorOverlay {
@@ -6,19 +7,14 @@ class ErrorOverlay {
   private _overlay: HTMLDivElement = this._create_error_overlay();
   private _changed = new Signal(false);
   private _loaded = false;
+  private _game: Game;
+  private _errorQueue = Promise.resolve();
 
   constructor(game: Game) {
-    window.onerror = (message, source, lineno, colno, _error) => {
-      game.error_pause();
-      this._errors.push(`${message}\nFile: ${source}:${lineno}:${colno}`);
-      this._changed.value = true;
-    };
+    this._game = game;
 
-    window.onunhandledrejection = (event) => {
-      game.error_pause();
-      this._errors.push(`Unhandled Promise Rejection: ${event.reason}`);
-      this._changed.value = true;
-    };
+    window.onerror = this._on_error.bind(this);
+    window.onunhandledrejection = this._on_unhandled_rejection.bind(this);
 
     this._changed.subscribe(() => {
       this._show_error_overlay(this._errors);
@@ -29,6 +25,48 @@ class ErrorOverlay {
     });
 
     this._loaded = true;
+  }
+
+  private async _on_unhandled_rejection(event: PromiseRejectionEvent) {
+    if(event.reason instanceof Error && window.onerror) {
+      window.onerror(event.reason.message, undefined, undefined, undefined, event.reason);
+    } else {
+      this._game.error_pause();
+      this._errors.push(`Unhandled Promise Rejection: ${event.reason}`);
+      this._changed.value = true;
+    }
+  }
+
+  private async _on_error(message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error) {
+    this._errorQueue = this._errorQueue.then(async () => {
+      this._game.error_pause();
+        
+      if(error?.stack && !import.meta.env.DEV) {
+        const stackLine = error.stack.split("\n")[1];
+        const match = stackLine.match(/:(\d+):(\d+)\)?$/);
+        if (match) {
+          const [_, jsLine, jsColumn] = match.map(Number);
+          const pos = await get_position_in_ts(jsLine, jsColumn, import.meta.url)
+          
+          this._errors.push("Loading stack trace");
+          this._changed.value = true;
+          const stack_trace = (await map_stack_trace(error, import.meta.url))
+            .map(frame =>
+              frame.source
+                ? `at ${frame.name || '<anonymous>'} (${frame.source}:${frame.line}:${frame.column})`
+                : frame.originalFrame || '<unknown>'
+            )
+            .join('\n');
+          this._errors.pop();
+          this._errors.push(`${message}\nFile: ${pos.source}:${pos.line}:${pos.column}, Stack:\n${stack_trace}`);
+        }
+      } else {
+        this._errors.push(`${message}\nFile: ${source}:${lineno}:${colno}, Stack:\n${error?.stack}`);
+      }
+      this._changed.value = true;
+    });
+
+    return this._errorQueue;
   }
 
   private _show_error_overlay(errors?: Readonly<string[]>, force_open = false) {
@@ -68,6 +106,8 @@ class ErrorOverlay {
       if (errorContainer) {
         for (const error of errors) {
           const errorMessage = document.createElement("div");
+          errorMessage.style.borderBottom = "2px solid #eee";
+          errorMessage.style.paddingBottom = "2px";
           errorMessage.textContent = error;
           errorContainer.appendChild(errorMessage);
         }
@@ -121,6 +161,9 @@ class ErrorOverlay {
     });
 
     const buttonHolder = document.createElement("div");
+    buttonHolder.style.display = "flex";
+    buttonHolder.style.flexDirection = "row";
+    buttonHolder.style.gap = "10px";
     buttonHolder.appendChild(closeOverlayButton);
     buttonHolder.appendChild(clearErrorsButton);
 
