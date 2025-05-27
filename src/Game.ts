@@ -1,5 +1,6 @@
 import CanvasHandler from "./CanvasHandler";
 import { SpriteToPlantKind } from "./entities/entityKinds/PlantKind.ts";
+import Projectile from "./entities/Projectile.ts";
 import Sun from "./entities/Sun";
 import GameState from "./GameState.ts";
 import CollisionSystem from "./gameSystems/CollisionSystem";
@@ -12,6 +13,7 @@ class Game {
   private _game_state: GameState;
   private _collision_system = new CollisionSystem();
   private _wave_system: WaveSystem;
+  private _last_update_time: number | null = null;
 
   constructor() {
     this._game_state = new GameState(this._sprite_loader, this._canvas_handler);
@@ -50,12 +52,20 @@ class Game {
     }
   }
 
-  private _game_loop(timestamp: number) {
+  private async _game_loop(timestamp: number) {
     if (this._game_state.is_game_over()) return;
     if (this._game_state.is_paused()) {
+      this._last_update_time = null;
       requestAnimationFrame(this._game_loop.bind(this));
       return;
     }
+
+    if (this._last_update_time === null) {
+      this._last_update_time = timestamp;
+    }
+
+    const delta = timestamp - this._last_update_time;
+    this._last_update_time = timestamp;
 
     // Limpar o canvas
     this._canvas_handler
@@ -74,25 +84,27 @@ class Game {
       ...this._game_state.plants(),
     ]);
     this._wave_system.update(
-      timestamp,
+      delta,
       this._game_state.is_game_over(),
       this._game_state.is_paused(),
     );
 
     this._draw_grid();
 
-    for (const plant of this._game_state.plants()) {
-      plant.update(timestamp);
-      plant.draw(this._canvas_handler.ctx());
+    for (const entities of this._game_state.entities().value) {
+      entities.update(timestamp);
+      entities.draw(this._canvas_handler.ctx());
     }
 
-    this._game_state.projectiles().value = this._game_state
+    const filtered_projectiles = this._game_state
       .projectiles()
-      .value.filter((proj) => {
-        proj.update();
-        proj.draw(this._canvas_handler.ctx());
-        return !proj.reached();
-      });
+      .filter((proj) => !proj.reached());
+
+    this._game_state.entities().value = this._game_state.entities().value.filter(e => !(e instanceof Projectile));
+
+    for(const p of filtered_projectiles) {
+      this._game_state.entities().mutate(e => e.push(p))
+    }
 
     for (const zombie of this._game_state.mut_zombies()) {
       zombie.x().value -= zombie.speed;
@@ -114,8 +126,8 @@ class Game {
           plant.health().value -= zombie.damage().value;
           if (plant.health().value <= 0) {
             this._game_state
-              .mut_plants()
-              .splice(this._game_state.plants().indexOf(plant), 1);
+              .entities()
+              .mutate(e => e.splice(this._game_state.plants().indexOf(plant), 1));
             zombie.speed = 0.5;
           }
         }
@@ -127,18 +139,16 @@ class Game {
       }
     }
 
-    for (const zombie of this._game_state.zombies()) {
-      zombie.draw(this._canvas_handler.ctx());
-    }
-
-    if (this._game_state.suns().value) {
-      this._game_state.suns().value = this._game_state
+    if (this._game_state.suns()) {
+      const filtered_suns = this._game_state
         .suns()
-        .value.filter((sun) => {
-          sun.update();
-          sun.draw(this._canvas_handler.ctx());
-          return !sun.collected();
-        });
+        .filter((sun) => !sun.collected());
+
+      this._game_state.entities().value = this._game_state.entities().value.filter(e => !(e instanceof Sun));
+
+      for (const sun of filtered_suns) {
+        this._game_state.entities().mutate(e => e.push(sun));
+      }
     }
 
     if (
@@ -241,8 +251,8 @@ class Game {
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
 
-        for (let i = this._game_state.suns().value.length - 1; i >= 0; i--) {
-          const sun = this._game_state.suns().value[i];
+        for (let i = this._game_state.suns().length - 1; i >= 0; i--) {
+          const sun = this._game_state.suns()[i];
           const distance = Math.sqrt(
             (clickX - sun.x().value) ** 2 + (clickY - sun.y().value) ** 2,
           );
@@ -262,7 +272,11 @@ class Game {
               document.body.removeChild(sunEffect);
             }, 1000);
 
-            this._game_state.suns().mutate((s) => s.splice(i, 1));
+            const index_in_entities = this._game_state.entities().value.indexOf(sun);
+            if (index_in_entities !== -1) {
+              this._game_state.entities().mutate((s) => s.splice(index_in_entities, 1));
+            }
+
             break;
           }
         }
@@ -357,7 +371,7 @@ class Game {
     );
     sun.target_y().value =
       Math.random() * (this._canvas_handler.canvas().height - 200) + 100;
-    this._game_state.suns().mutate((s) => s.push(sun));
+    this._game_state.entities().mutate((s) => s.push(sun));
     return sun;
   }
 
