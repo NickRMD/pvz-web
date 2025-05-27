@@ -23,7 +23,7 @@ export default class Peashooter extends Plant {
   // private _range = 300;
   private _attack_speed = 2000;
 
-  update(timestamp: number) {
+  public update(timestamp: number) {
     if (timestamp - this._last_action_time > this._attack_speed) {
       const zombieInRow = this._game_state
         .zombies()

@@ -20,7 +20,7 @@ export default class Sunflower extends Plant {
   // private _sun_production = 45;
   private _sun_production_speed = 15000;
 
-  update(timestamp: number) {
+  public update(timestamp: number) {
     if (timestamp - this._last_action_time > this._sun_production_speed) {
       this._game_state.produce_sun(this._x.value, this._y.value);
       this._last_action_time = timestamp;

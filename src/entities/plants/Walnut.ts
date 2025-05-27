@@ -18,5 +18,5 @@ export default class Walnut extends Plant {
   protected _hex_color = "#8B4513";
 
   // Planta defensiva, não ataca
-  update(): void {}
+  public update(): void {}
 }

@@ -21,8 +21,10 @@ class Pea extends Projectile {
         zombie.health().value -= this._damage;
         if (zombie.health().value <= 0) {
           this._game_state
-            .mut_zombies()
-            .splice(this._game_state.zombies().indexOf(zombie), 1);
+            .entities()
+            .mutate(
+              e => e.splice(this._game_state.entities().value.indexOf(zombie), 1)
+            );
           this._game_state.update_ui();
         }
         this._reached = true;

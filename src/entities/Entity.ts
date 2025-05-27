@@ -21,6 +21,7 @@ abstract class Entity {
     | "produce_sun"
     | "sprite_loader"
     | "shoot_projectile"
+    | "entities"
   >;
   protected abstract _height: number;
   protected abstract _width: number;
