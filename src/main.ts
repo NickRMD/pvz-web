@@ -2,12 +2,19 @@ import "./style.css";
 import Game from "./Game";
 import ErrorOverlay from "./ErrorOverlay";
 
+declare global {
+  interface Window {
+    _game: Game
+  }
+}
+
 const game = new Game();
+window._game = game;
 
 game.start();
 new ErrorOverlay(game);
 
-if (import.meta.env.DEV) {
+async function import_debug_tools() {
   const modules = import.meta.glob("./utils/debug/**/*.ts");
 
   for (const path in modules) {
@@ -16,6 +23,8 @@ if (import.meta.env.DEV) {
 
   console.log("Loaded debug tools");
 }
+
+import_debug_tools();
 
 // function mergePlants() { //TODO
 //     const mergeArea = document.getElementById('mergeArea');
