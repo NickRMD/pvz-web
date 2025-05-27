@@ -9,9 +9,10 @@ class WaveSystem {
   private _zombies_spawned = 0;
   private _zombies_in_wave = 0;
   private _wave_cooldown = 30000;
-  private _last_wave_time = 0;
   private _wave_active = false;
   private _rows: () => number;
+  private _time_since_last_wave = 0;
+  private _time_since_last_spawn = 0;
 
   constructor(
     rows: () => number,
@@ -56,33 +57,35 @@ class WaveSystem {
     ];
   }
 
-  public update(timestamp: number, game_over: boolean, paused: boolean) {
+  public update(delta: number, game_over: boolean, paused: boolean) {
     if (game_over || paused) return;
 
-    if (
-      !this._wave_active &&
-      timestamp - this._last_wave_time > this._wave_cooldown
-    ) {
-      this.start_next_wave(timestamp);
+    if (!this._wave_active) {
+      this._time_since_last_wave += delta;
+      if(this._time_since_last_wave >= this._wave_cooldown) {
+        this.start_next_wave();
+      }
+      return
     }
 
-    if (this._wave_active && this._zombies_spawned < this._zombies_in_wave) {
-      if (
-        timestamp - this._last_wave_time >
-        this._waves[this._current_wave].interval
-      ) {
-        this.spawn_zombie();
-        this._last_wave_time = timestamp;
-        this._zombies_spawned++;
+    this._time_since_last_spawn += delta;
+    const wave = this._waves[this._current_wave];
 
-        if (this._zombies_spawned >= this._zombies_in_wave) {
-          this.end_wave();
-        }
+    if (
+      this._zombies_spawned < this._zombies_in_wave &&
+      this._time_since_last_spawn >= wave.interval
+    ) {
+      this.spawn_zombie();
+      this._time_since_last_spawn = 0;
+      this._zombies_spawned++;
+
+      if (this._zombies_spawned >= this._zombies_in_wave) {
+        this.end_wave();
       }
     }
   }
 
-  start_next_wave(timestamp: number) {
+  start_next_wave() {
     if (this._current_wave >= this._waves.length) {
       this._current_wave = 0;
       this._level_up();
@@ -93,7 +96,7 @@ class WaveSystem {
     this._zombies_spawned = 0;
     this._zombies_in_wave =
       this._waves[this._current_wave].zombies + Math.floor(this._level / 2);
-    this._last_wave_time = timestamp;
+    this._time_since_last_wave = 0;
 
     console.log(
       `Wave ${this._current_wave + 1} iniciada! Nível ${this._level}`,
@@ -102,7 +105,7 @@ class WaveSystem {
 
   end_wave() {
     this._wave_active = false;
-    this._last_wave_time = performance.now();
+    this._time_since_last_wave = 0;
     this._current_wave++;
     // gameState.waveCount++;
 
@@ -127,7 +130,8 @@ class WaveSystem {
     this._current_wave = 0;
     this._zombies_spawned = 0;
     this._wave_active = false;
-    this._last_wave_time = 0;
+    this._time_since_last_wave = 0;
+    this._time_since_last_spawn = 0;
   }
 
   increase_difficulty() {
