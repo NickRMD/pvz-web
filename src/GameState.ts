@@ -26,11 +26,9 @@ interface PlantSelection {
 }
 
 class GameState {
-  public sun = 50;
+  public sun = new Signal(50);
   private _entities: Signal<Entity[]> = new Signal([] as Entity[]);
-  // private _last_zombie_time = 0;
-  // private _zombie_interval = 5000;
-  public readonly sun_interval = 5000;
+  public readonly sun_interval = 5;
   public last_sun_time = 0;
   private _grid = {
     rows: 5,
@@ -55,6 +53,12 @@ class GameState {
     this._canvas_handler = canvas_handler;
     this.sprite_loader = sprite_loader;
     this._resize_grid();
+    this.sun.subscribe(
+      (s) => document.getElementById("sunCount")!.textContent = s.toString()
+    );
+    this._entities.subscribe(
+      () => document.getElementById("zombieCount")!.textContent = this.zombies().length.toString()
+    );
     window.addEventListener("resize", this._resize_grid.bind(this));
     // this.mergePlants = [];
     document.getElementById("pauseMenu")!.style.display = this._paused
@@ -143,8 +147,9 @@ class GameState {
   }
 
   reset() {
-    this.sun = 50;
+    this.sun.value = 50;
     this._entities.value = [];
+    this.last_sun_time = 0;
     // this._last_zombie_time = 0;
     // this._zombie_interval = 5000;
     this._game_over = false;
@@ -230,12 +235,10 @@ class GameState {
         return new Pea(
           plant.x().value,
           plant.y().value,
-          zombie.x().value,
-          this._grid.offset_y +
-            zombie.row() * this._grid.cell_height +
-            this._grid.cell_height / 2,
+          zombie.x.bind(zombie),
+          zombie.y.bind(zombie),
           plant.damage(),
-          5,
+          300,
           this,
         );
       })
@@ -245,8 +248,7 @@ class GameState {
   }
 
   public produce_sun(x: number, y: number) {
-    const sun = new Sun(x, y, this);
-    sun.target_y().value = y + 100;
+    const sun = new Sun(x, y, y + 100, this);
     this._entities.mutate((s) => s.push(sun));
     return sun;
   }
@@ -256,9 +258,6 @@ class GameState {
   }
 
   public update_ui() {
-    document.getElementById("sunCount")!.textContent = this.sun.toString();
-    document.getElementById("zombieCount")!.textContent =
-      this.zombies().length.toString();
     document.getElementById("waveCount")!.textContent =
       this._wave_count().toString();
     document.getElementById("levelCount")!.textContent =
