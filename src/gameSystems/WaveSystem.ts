@@ -5,10 +5,11 @@ class WaveSystem {
   private _waves: { zombies: number; types: ZombieKind[]; interval: number }[] =
     [];
   private _level = 0;
+  private _total_waves = 0;
   private _current_wave = 0;
   private _zombies_spawned = 0;
   private _zombies_in_wave = 0;
-  private _wave_cooldown = 30000;
+  private _wave_cooldown = 30;
   private _wave_active = false;
   private _rows: () => number;
   private _time_since_last_wave = 0;
@@ -33,26 +34,26 @@ class WaveSystem {
 
   initialize_waves() {
     this._waves = [
-      { zombies: 5, types: [ZombieKind.Basic], interval: 3000 },
+      { zombies: 5, types: [ZombieKind.Basic], interval: 3 },
       {
         zombies: 8,
         types: [ZombieKind.Basic, ZombieKind.Cone],
-        interval: 2500,
+        interval: 2.5,
       },
       {
         zombies: 12,
         types: [ZombieKind.Basic, ZombieKind.Cone, ZombieKind.Bucket],
-        interval: 2000,
+        interval: 2,
       },
       {
         zombies: 15,
         types: [ZombieKind.Basic, ZombieKind.Cone, ZombieKind.Bucket],
-        interval: 1500,
+        interval: 1.5,
       },
       {
         zombies: 20,
         types: [ZombieKind.Basic, ZombieKind.Cone, ZombieKind.Bucket],
-        interval: 1000,
+        interval: 1,
       },
     ];
   }
@@ -63,7 +64,7 @@ class WaveSystem {
     if (!this._wave_active) {
       this._time_since_last_wave += delta;
       if (this._time_since_last_wave >= this._wave_cooldown) {
-        this.start_next_wave();
+        this._start_next_wave();
       }
       return;
     }
@@ -80,16 +81,16 @@ class WaveSystem {
       this._zombies_spawned++;
 
       if (this._zombies_spawned >= this._zombies_in_wave) {
-        this.end_wave();
+        this._end_wave();
       }
     }
   }
 
-  start_next_wave() {
+  private _start_next_wave() {
     if (this._current_wave >= this._waves.length) {
       this._current_wave = 0;
       this._level_up();
-      this.increase_difficulty();
+      this._increase_difficulty();
     }
 
     this._wave_active = true;
@@ -103,19 +104,19 @@ class WaveSystem {
     );
   }
 
-  end_wave() {
+  private _end_wave() {
     this._wave_active = false;
     this._time_since_last_wave = 0;
     this._current_wave++;
-    // gameState.waveCount++;
+    this._total_waves++;
 
     console.log(
-      `Wave completa! Próxima wave em ${this._wave_cooldown / 1000} segundos.`,
+      `Wave completa! Próxima wave em ${this._wave_cooldown} segundos.`,
     );
   }
 
-  public current_wave(): Readonly<number> {
-    return this._current_wave;
+  public total_waves(): Readonly<number> {
+    return this._total_waves;
   }
 
   private spawn_zombie() {
@@ -127,6 +128,7 @@ class WaveSystem {
   }
 
   public reset() {
+    this._total_waves = 0;
     this._current_wave = 0;
     this._zombies_spawned = 0;
     this._wave_active = false;
@@ -134,10 +136,10 @@ class WaveSystem {
     this._time_since_last_spawn = 0;
   }
 
-  increase_difficulty() {
-    this._wave_cooldown = Math.max(10000, this._wave_cooldown - 2000);
+  private _increase_difficulty() {
+    this._wave_cooldown = Math.max(10, this._wave_cooldown - 2);
     for (const wave of this._waves) {
-      wave.interval = Math.max(1000, wave.interval - 200);
+      wave.interval = Math.max(1, wave.interval - 0.2);
     }
   }
 }
