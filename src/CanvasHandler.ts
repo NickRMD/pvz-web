@@ -5,11 +5,11 @@ class CanvasHandler {
   private _zombie_area_width = this._canvas.width * 0.2;
 
   constructor() {
-    this._canvas_resize();
-    window.addEventListener("resize", this._canvas_resize.bind(this));
+    this.canvas_resize();
+    window.addEventListener("resize", this.canvas_resize.bind(this));
   }
 
-  private _canvas_resize() {
+  public canvas_resize() {
     const scale = window.devicePixelRatio || 1;
 
     const windowWidth = window.innerWidth;
@@ -28,8 +28,7 @@ class CanvasHandler {
     this._grass_width = windowWidth * 0.8;
     this._zombie_area_width = windowWidth * 0.2;
 
-    this._ctx.imageSmoothingEnabled = true;
-    this._ctx.imageSmoothingQuality = "high";
+    this._ctx.imageSmoothingEnabled = false;
 
     this.draw_background();
   }
