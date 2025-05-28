@@ -5,8 +5,8 @@ import Signal from "../utils/Signal";
 abstract class Entity {
   protected _x = new Signal(0);
   protected _y = new Signal(0);
-  protected abstract _target_x?: Signal<number>;
-  protected abstract _target_y?: Signal<number>;
+  protected abstract _target_x?: Signal<number> | number | (() => (number | Signal<number>)) | null;
+  protected abstract _target_y?: Signal<number> | number | (() => (number | Signal<number>)) | null;
   protected abstract _health?: number | Signal<number>;
   protected abstract _max_health?: number;
   protected abstract _damage?: number | Signal<number>;
@@ -16,23 +16,24 @@ abstract class Entity {
     | "zombies"
     | "mut_plants"
     | "plants"
-    | "update_ui"
     | "grid"
     | "produce_sun"
     | "sprite_loader"
     | "shoot_projectile"
     | "entities"
+    | "get_grid_position"
   >;
   protected abstract _height: number;
   protected abstract _width: number;
   protected abstract _hex_color: string;
   protected abstract _sprite: SpriteKeyEnum;
+  protected abstract _time_since_last_action?: number;
 
   constructor(game_state: GameState) {
     this._game_state = game_state;
   }
 
-  public abstract update(timestamp: number): void;
+  public abstract update(delta_s: number): void;
   public abstract draw(ctx: CanvasRenderingContext2D): void;
 
   public x() {
