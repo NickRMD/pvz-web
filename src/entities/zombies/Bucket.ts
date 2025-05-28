@@ -7,7 +7,10 @@ class ZombieBucket extends Zombie {
     return 300;
   }
   protected _damage = new Signal(1);
-  public speed = 0.3;
+  protected _time_since_last_action: undefined;
+  public readonly base_speed = 18;
+  public current_speed = 18;
+  protected _time_to_move = 7;
 
   protected _height = 90;
   protected _width = 50;

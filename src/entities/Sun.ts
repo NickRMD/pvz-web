@@ -1,32 +1,32 @@
 import type GameState from "../GameState";
 import { SpriteKeyEnum } from "../SpriteLoader";
 import down_scale_image from "../utils/downScaleImage";
-import Signal from "../utils/Signal";
 import Entity from "./Entity";
 
 class Sun extends Entity {
   private _collected = false;
-  private _lifetime = 10000;
+  private _lifetime = 10;
   private _value = 50;
-  private _spawn_time = performance.now();
-  private _speed = 1;
+  private _time_on_screen = 0;
+  private _speed = 60;
 
   protected _health: undefined;
   protected _max_health: undefined;
   protected _damage: undefined;
-  protected _target_y: Signal<number>;
+  protected _target_y: number;
   protected _target_x: undefined;
+  protected _time_since_last_action: undefined;
 
   protected _height = 40;
   protected _width = 40;
   protected _sprite = SpriteKeyEnum.Sun;
   protected _hex_color = "#FFD700";
 
-  constructor(x: number, y: number, game_state: GameState, collected = false) {
+  constructor(x: number, y: number, target_y: number, game_state: GameState, collected = false) {
     super(game_state);
     this._x.value = x;
     this._y.value = y;
-    this._target_y = new Signal(y);
+    this._target_y = target_y;
     this._collected = collected;
   }
 
@@ -42,14 +42,14 @@ class Sun extends Entity {
     this._collected = true;
   }
 
-  public update() {
-    if (!this._collected && this._y.value < this._target_y.value) {
-      this._y.value += this._speed;
+  public update(delta: number) {
+    this._time_on_screen += delta;
+    if (!this._collected && this._y.value < this._target_y) {
+      this._y.value += this._speed * delta;
     }
 
     if (
-      !this._collected &&
-      performance.now() - this._spawn_time > this._lifetime
+      !this._collected && this._time_on_screen > this._lifetime
     ) {
       this.collect();
     }

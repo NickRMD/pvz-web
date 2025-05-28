@@ -7,7 +7,6 @@ import { down_scale_sprite } from "../utils/downScaleImage";
 abstract class Plant extends Entity {
   protected _row: number;
   protected _col: number;
-  protected _last_action_time = 0;
   protected abstract _health: Signal<number>;
   protected abstract _max_health: number;
   protected abstract _damage: number;

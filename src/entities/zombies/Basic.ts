@@ -7,7 +7,10 @@ class ZombieBasic extends Zombie {
     return 100;
   }
   protected _damage = new Signal(0.5);
-  public speed = 0.5;
+  protected _time_since_last_action: undefined;
+  public readonly base_speed = 30;
+  public current_speed = 30;
+  protected _time_to_move = 5;
 
   protected _height = 80;
   protected _width = 40;

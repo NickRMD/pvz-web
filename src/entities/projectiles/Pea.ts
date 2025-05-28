@@ -5,6 +5,7 @@ class Pea extends Projectile {
   protected _width = 20;
   protected _height = 20;
   protected _sprite = SpriteKeyEnum.Pea;
+  protected _time_since_last_action: undefined;
   protected _hex_color = "#FF5722";
 
   protected _hit_target(): void {
@@ -12,9 +13,7 @@ class Pea extends Projectile {
       const dx = this._x.value - zombie.x().value;
       const dy =
         this._y.value -
-        (this._game_state.grid().offset_y +
-          zombie.row() * this._game_state.grid().cell_height +
-          this._game_state.grid().cell_height / 2);
+        zombie.y().value;
       const distance = Math.sqrt(dx ** 2 + dy ** 2);
 
       if (distance < this._width / 2 + zombie.width() / 2) {
@@ -25,7 +24,6 @@ class Pea extends Projectile {
             .mutate((e) =>
               e.splice(this._game_state.entities().value.indexOf(zombie), 1),
             );
-          this._game_state.update_ui();
         }
         this._reached = true;
       }

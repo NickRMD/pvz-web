@@ -8,6 +8,7 @@ export default class Walnut extends Plant {
   protected readonly _max_health = this._health.value;
   protected _damage = 0;
   protected _recharge = 20;
+  protected _time_since_last_action: undefined;
   public readonly kind = PlantKind.Walnut;
 
   public readonly cost = 50;

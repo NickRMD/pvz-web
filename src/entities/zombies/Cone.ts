@@ -7,7 +7,10 @@ class ZombieCone extends Zombie {
     return 200;
   }
   protected _damage = new Signal(0.5);
-  public speed = 0.4;
+  protected _time_since_last_action: undefined;
+  public readonly base_speed = 24;
+  public current_speed = 24;
+  protected _time_to_move = 2;
 
   protected _height = 85;
   protected _width = 45;

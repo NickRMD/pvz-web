@@ -11,6 +11,7 @@ export default class Peashooter extends Plant {
   protected readonly _max_health = this._health.value;
   protected _damage = 20;
   protected _recharge = 5;
+  protected _time_since_last_action = 0;
   public readonly kind = PlantKind.Peashooter;
 
   public readonly cost = 100;
@@ -21,22 +22,27 @@ export default class Peashooter extends Plant {
   protected _hex_color = "#4CAF50";
 
   // private _range = 300;
-  private _attack_speed = 2000;
+  private _attack_speed = 2;
 
-  public update(timestamp: number) {
-    if (timestamp - this._last_action_time > this._attack_speed) {
+  public update(delta: number) {
+    this._time_since_last_action += delta;
+
+    if (this._time_since_last_action > this._attack_speed) {
       const zombieInRow = this._game_state
         .zombies()
         .find(
-          (z) =>
-            z.row() === this._row &&
-            z.x().value > this._col * this._game_state.grid().cell_width &&
-            z.x().value >= this._game_state.grid().offset_x &&
-            z.x().value <=
-              this._game_state.grid().offset_x +
-                this._game_state.grid().cols *
-                  this._game_state.grid().cell_width,
-        );
+          (z) => {
+            const grid_pos = this._game_state.get_grid_position(z.x().value, z.y().value);
+            if(grid_pos) {
+              return grid_pos.row === this._row &&
+              z.x().value > this._col * this._game_state.grid().cell_width &&
+              z.x().value >= this._game_state.grid().offset_x &&
+              z.x().value <=
+                this._game_state.grid().offset_x +
+                  this._game_state.grid().cols *
+                    this._game_state.grid().cell_width;
+            };
+          });
 
       if (zombieInRow) {
         this._game_state.shoot_projectile(
@@ -45,7 +51,7 @@ export default class Peashooter extends Plant {
           ProjectileKind.pea,
           ProjectileDirection.PlantToZombie,
         );
-        this._last_action_time = timestamp;
+        this._time_since_last_action = 0;
       }
     }
   }

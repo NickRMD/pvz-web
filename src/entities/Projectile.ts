@@ -3,8 +3,8 @@ import Signal from "../utils/Signal";
 import Entity from "./Entity";
 
 abstract class Projectile extends Entity {
-  protected _target_x: Signal<number>;
-  protected _target_y: Signal<number>;
+  protected _target_x: () => Signal<number>;
+  protected _target_y: () => Signal<number>;
   protected _damage: number;
   private _speed: number;
   protected _reached = false;
@@ -16,8 +16,8 @@ abstract class Projectile extends Entity {
   constructor(
     x: number,
     y: number,
-    target_x: number,
-    target_y: number,
+    target_x: () => Signal<number>,
+    target_y: () => Signal<number>,
     damage: number,
     speed: number,
     game_state: GameState,
@@ -26,27 +26,25 @@ abstract class Projectile extends Entity {
     super(game_state);
     this._x = new Signal(x);
     this._y = new Signal(y);
-    this._target_x = new Signal(target_x);
-    this._target_y = new Signal(target_y);
+    this._target_x = target_x;
+    this._target_y = target_y;
     this._damage = damage;
     this._speed = speed;
     // this.type = type;
-    this._angle = Math.atan2(target_y - y, target_x - x);
+    this._angle = Math.atan2(target_y().value - y, target_x().value - x);
   }
 
-  public update() {
-    const dx = this._target_x.value - this._x.value;
-    const dy = this._target_y.value - this._y.value;
+  public update(delta: number) {
+    const dx = this._target_x().value - this._x.value;
+    const dy = this._target_y().value - this._y.value;
     const distance = Math.sqrt(dx ** 2 + dy ** 2);
 
-    if (distance < this._speed) {
+    if (distance < (this._speed * delta)) {
       this._reached = true;
       this._hit_target();
     } else {
-      // this._x.value += ((dx / distance) * this._speed);
-      // this._y.value += ((dy / distance) * this._speed);
-      this._x.value += (dx / distance) * this._speed;
-      this._y.value += (dy / distance) * this._speed;
+      this._x.value += ((dx / distance) * this._speed * delta);
+      this._y.value += ((dy / distance) * this._speed * delta);
     }
   }
 
