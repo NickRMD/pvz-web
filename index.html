@@ -4,43 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plants vs Zombies</title>
-    <script type="module" src="./src/main.ts"></script>
 </head>
 <body>
-    <div id="loading">Carregando recursos...</div>
-    
-    <div id="ui" class="game-info">
+    <div id="gameContainer">
+      <div id="loading">Carregando recursos...</div>
+      
+      <div id="ui" class="game-info">
         <div>Sol: <span id="sunCount">50</span></div>
         <div>Zumbis: <span id="zombieCount">0</span></div>
         <div>Wave: <span id="waveCount">0</span></div>
         <div>Nível: <span id="levelCount">1</span></div>
-    </div>
-    
-    <div id="plantSelection">
+      </div>
+      
+      <div id="plantSelection">
         <div class="plant-icon" data-plant="sunflower" data-cost="50">
-            <img src="assets/sprites/sunflower.webp" alt="sunflower">
-            <span>50</span>
+          <img src="assets/sprites/sunflower.webp" alt="sunflower">
+          <span>50</span>
         </div>
         <div class="plant-icon" data-plant="peashooter" data-cost="100">
-            <img src="assets/sprites/peashooter.webp" alt="peashooter">
-            <span>100</span>
+          <img src="assets/sprites/peashooter.webp" alt="peashooter">
+          <span>100</span>
         </div>
         <div class="plant-icon" data-plant="walnut" data-cost="50">
-            <img src="assets/sprites/walnut.webp" alt="walnut">
-            <span>50</span>
+          <img src="assets/sprites/walnut.webp" alt="walnut">
+          <span>50</span>
         </div>
-    </div>
-    
-    <div id="plantPreview"></div>
-    <div id="mergeArea"></div>
-    
-    <div id="pauseMenu">
+      </div>
+      
+      <div id="plantPreview"></div>
+      <div id="mergeArea"></div>
+      
+      <div id="pauseMenu">
         <h2>Jogo Pausado</h2>
         <button id="resumeButton">Continuar</button>
         <button id="restartButton">Reiniciar</button>
         <button id="testErrorButton">Test Error</button>
+        <button id="toggleFPSButton">Toggle FPS</button>
+      </div>
+      
+      <canvas id="gameCanvas"></canvas>
+      <script type="module" src="./src/main.ts"></script>
     </div>
-    
-    <canvas id="gameCanvas"></canvas>
 </body>
 </html>
