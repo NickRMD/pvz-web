@@ -6,7 +6,7 @@ body {
 }
 canvas {
   display: block;
-  image-rendering: auto;
+  image-rendering: crisp-edges;
 }
 #ui {
   position: absolute;
